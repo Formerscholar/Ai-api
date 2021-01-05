@@ -17,8 +17,7 @@ return [
 
     // 应用映射（自动多应用模式有效）
     'app_map'          => [
-        'manage'  =>  'admin',
-        '*' =>  'ins'
+        'manage'    =>  'admin'
     ],
     // 域名绑定（自动多应用模式有效）
     'domain_bind'      => [],
@@ -32,8 +31,9 @@ return [
     'error_message'    => '页面错误！请稍后再试～',
     // 显示错误信息
     'show_error_msg'   => false,
+
     // 开启应用快速访问
 //    'app_express'    =>    true,
-//    // 默认应用
+    // 默认应用
 //    'default_app'    =>    'ins',
 ];

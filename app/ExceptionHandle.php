@@ -7,8 +7,13 @@ use think\exception\Handle;
 use think\exception\HttpException;
 use think\exception\HttpResponseException;
 use think\exception\ValidateException;
+use think\facade\Log;
+use think\initializer\Error;
 use think\Response;
 use Throwable;
+use think\exception\FuncNotFoundException;
+use think\exception\ClassNotFoundException;
+use think\exception\ErrorException;
 
 /**
  * 应用异常处理类
@@ -51,7 +56,12 @@ class ExceptionHandle extends Handle
     public function render($request, Throwable $e): Response
     {
         // 添加自定义异常处理机制
-
+        if ($e instanceof ValidateException) {
+            if($e->getMessage() == "登录超时")
+                return my_json([],777,$e->getMessage());
+            else
+                return my_json([],-1,$e->getMessage());
+        }
         // 其他错误交给系统处理
         return parent::render($request, $e);
     }
