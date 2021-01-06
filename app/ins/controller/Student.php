@@ -8,6 +8,7 @@
 namespace app\ins\controller;
 
 //学生管理
+use app\ins\model\Knowledge;
 use app\ins\model\QuestionCategory;
 use app\ins\model\StudentResult;
 use app\ins\model\StudentStudy;
@@ -195,9 +196,49 @@ class Student extends Admin{
         if($start_time && $end_time && $start_time < $end_time)
             $where[] = ['add_time','between',[$start_time,$end_time]];
 
-        $result = StudentResult::where($where)->fieldRaw("question_type,count(*) as count")->group("question_type")->select()->toArray();
+        //按题目类型统计
+//        $result = StudentResult::where($where)->fieldRaw("question_type,count(*) as count")->group("question_type")->select()->toArray();
+//        $total_count = StudentResult::where($where)->count();
+//        $type_list = QuestionCategory::getTypeList(array_column($result,"question_type"));
+//
+//        $re = [];
+//        $re['title'] = "学情报告";
+//        $re['xAxis'] = [];
+//        $re['yAxis'] = [];
+//        foreach($result as $item)
+//        {
+//            $re['xAxis'][] = $type_list[$item['question_type']]['title'];
+//            $re['yAxis'][] = [
+//                "value" =>  bcdiv($item['count'],$total_count,2),
+//                "name"  =>  $type_list[$item['question_type']]['title'],
+//            ];
+//        }
+        //按知识点统计
         $total_count = StudentResult::where($where)->count();
-        $type_list = QuestionCategory::getTypeList(array_column($result,"question_type"));
+        $know_point_ids = StudentResult::where($where)->column("question_know_point");
+        $know_point_ids = array_filter(array_unique(explode(",",join(",",$know_point_ids))));
+        $know_point_list = Knowledge::where("id","in",$know_point_ids)->orderRaw("field(id,".join(",",$know_point_ids).")")->select();
+
+        if($know_point_list)
+            $know_point_list = array_column($know_point_list->toArray(),null,"id");
+        $result =[];
+        $other_count = $total_count;
+        foreach($know_point_ids as $know_point_id)
+        {
+            $count = StudentResult::where($where)->where("question_know_point","find in set",$know_point_id)->count();
+            $result[] = [
+                "id"    =>  $know_point_id,
+                "name"  =>  isset($know_point_list[$know_point_id])?$know_point_list[$know_point_id]['title']:"未知知识点",
+                "count" => $count
+            ];
+            $other_count = $total_count - $count;
+        }
+        if($other_count)
+            $result[] = [
+                "id"    =>  "",
+                "name"  =>  "空知识点",
+                "count" =>  $other_count
+            ];
 
         $re = [];
         $re['title'] = "学情报告";
@@ -205,13 +246,13 @@ class Student extends Admin{
         $re['yAxis'] = [];
         foreach($result as $item)
         {
-            $re['xAxis'][] = $type_list[$item['question_type']]['title'];
+            $re['xAxis'][] = $item['name'];
             $re['yAxis'][] = [
-                "value" =>  $item['count'] / $total_count,
-                "name"  =>  $type_list[$item['question_type']]['title'],
+                "value" =>  bcdiv($item['count'],$total_count,2),
+                "name"  =>  $item['name'],
             ];
         }
-
+        
         return my_json($re);
     }
 }

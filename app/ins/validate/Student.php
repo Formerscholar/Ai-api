@@ -14,7 +14,7 @@ class Student extends Validate{
     protected $rule = [
         'name' =>  'require|max:20',
         'sex' =>  'require|in:1,2',
-        'mobile'  =>  'require|length:11',
+        'mobile'  =>  'mobile',
         'school_id'  =>  'require|number',
         'team_ids' =>  'require|array',
         'uids'  =>  'require|array',

@@ -105,6 +105,7 @@ class Study extends Admin{
                 "question_id"   =>  $question['question_id'],
                 "subject_id"    =>  $question['subject_id'],
                 "question_type"    =>  $question['question_type'],
+                "question_know_point"    =>  $question['question_know_point'],
                 "student_id"    =>  $student_id,
                 "add_time"  =>  time(),
             ];
