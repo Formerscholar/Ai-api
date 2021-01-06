@@ -11,6 +11,7 @@ namespace app\ins\controller;
 use app\ins\model\Course;
 use app\ins\model\CourseBuy;
 use app\ins\model\Paper;
+use app\ins\model\Question;
 use app\ins\model\Student;
 use app\ins\model\StudentResult;
 use app\ins\model\StudentStudy;
@@ -49,7 +50,12 @@ class Study extends Admin{
 
         $re = [];
         $re['study_data'] = current(StudentStudy::format_list([$student_study_model->getData()]));
-        $re['result'] = StudentResult::where("study_id",$id)->column("question_id");
+        $re['questions'] = [];
+        $question_ids = StudentResult::where("study_id",$id)->column("question_id");
+        if($question_ids)
+        {
+            $re['questions'] = Question::where("id","in",$question_ids)->select();
+        }
 
         return my_json($re);
     }
@@ -124,7 +130,7 @@ class Study extends Admin{
             // 回滚事务
             \think\facade\Db::rollback();
 
-            return my_json([],-1,"操作失败");
+            return my_json([],-1,$e->getMessage());
         }
     }
     //编辑学生上课记录

@@ -9,6 +9,7 @@ namespace app\ins\controller;
 
 //课程管理
 use app\ins\model\CourseBuy;
+use app\ins\model\Student;
 use app\ins\model\StudentResult;
 use app\ins\model\StudentStudy;
 use app\Request;
@@ -103,8 +104,11 @@ class Course extends Admin{
 
         $where[] = ["ins_id","=",$this->ins_id];
         $keyword = input("get.keyword","");
+        $school_id = input("get.school_id",0,"int");
         if($keyword)
-            $where[] = ['name','like',"%{$keyword}%"];
+            $where[] = ['student_name','like',"%{$keyword}%"];
+        if($school_id)
+            $where[] = ["school_id",'=',$school_id];
 
         $list = CourseBuy::get_page($where,"*","add_time DESC",$page,$limit);
         $list['list'] = CourseBuy::format_list($list['list']);
@@ -114,8 +118,12 @@ class Course extends Admin{
 
     //课程购买记录添加
     public function addBuy(){
-        $post_data = request()->post();
+        $post_data = request()->except(["id"]);
         validate(\app\ins\validate\CourseBuy::class)->scene("add")->check($post_data);
+
+        $student_model = Student::find($post_data['student_id']);
+        if(!$student_model)
+            return my_json([],-1,"未找到学生信息");
 
         $c = CourseBuy::scope("ins_id")->where([
             "course_id" =>  $post_data['course_id'],
@@ -125,6 +133,7 @@ class Course extends Admin{
         if($c)
             return my_json([],-1,"学生已经购买了该课程");
 
+        $post_data['student_name'] = $student_model['name'];
         $post_data['uid'] = $this->uid;
         $post_data['ins_id'] = $this->ins_id;
         $post_data['add_time'] = time();

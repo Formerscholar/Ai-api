@@ -14,7 +14,6 @@ class CourseBuy extends Validate{
     protected $rule = [
         'course_id' =>  'require|integer',
         'student_id' =>  'require|integer',
-        'pay_money' =>  'require|float',
         'buy_hour' =>  'require|number',
         'used_hour' =>  'number',
     ];
@@ -22,10 +21,10 @@ class CourseBuy extends Validate{
 
     ];
     protected $scene = [
-        'add'  =>  ['course_id','student_id','pay_money','buy_hour'],
+        'add'  =>  ['course_id','student_id','buy_hour'],
     ];
     public function sceneEdit()
     {
-        return $this->only(['pay_money','buy_hour','used_hour']);
+        return $this->only(['buy_hour','used_hour']);
     }
 }

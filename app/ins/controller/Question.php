@@ -144,8 +144,63 @@ class Question extends Admin
     public function getInfo(){
         $id = input("get.id");
 
+        $re = [
+            "question" => [],
+            "about" =>  [],
+        ];
         $model = \app\ins\model\Question::find($id);
+        $re['question'] = $model->getData();
 
-        return my_json($model->getData());
+        //检测是否已经添加到组卷栏中
+        $basket_question_ids = Basket::getQuestionIds($this->uid);
+        if(in_array($re['question']['id'],$basket_question_ids))
+            $re['question']['has_add_basket'] = 1;
+        else
+            $re['question']['has_add_basket'] = 0;
+
+        $re['question']['type_name'] = QuestionCategory::where("id",$re['question']['type'])->column('title');
+        if(!empty($re['question']['type_name']))
+            $re['question']['type_name'] = join(",",$re['question']['type_name']);
+        $question_know_point_list = Knowledge::get_all(["id" => array_filter(array_unique(explode(",",$re['question']['know_point'])))],"id,title");
+        $re['question']['know_point_names'] = "";
+        foreach($question_know_point_list as $p)
+        {
+            if(strstr(','.$re['question']['know_point'].',',(string)$p['id']))
+            {
+                $re['question']['know_point_names'] .= $p['title'];
+            }
+        }
+
+        $re['about'] = \app\ins\model\Question::get_rand_list($model['type'],1);
+        //题型
+        $question_types = array_column($re['about'],"type");
+        $question_type_list = QuestionCategory::where("id","in",$question_types)->field("id,title")->select()->toArray();
+        if(!empty($question_type_list))
+            $question_type_list = array_column($question_type_list,null,"id");
+        //知识点
+        $question_know_point_ids = array_column($re['about'],"know_point");
+        $question_know_point_list = Knowledge::get_all(["id" => array_filter(array_unique(explode(",",join(",",$question_know_point_ids))))],"id,title");
+        if($question_know_point_list)
+            $question_know_point_list = array_column($question_know_point_list,null,"id");
+        foreach($re['about'] as $key => $val)
+        {
+            if(in_array($val['id'],$basket_question_ids))
+                $re['about'][$key]['has_add_basket'] = 1;
+            else
+                $re['about'][$key]['has_add_basket'] = 0;
+
+            $re['about'][$key]['type_name'] = isset($question_type_list[$val['type']])?$question_type_list[$val['type']]['title']:"";
+
+            $re['about'][$key]['know_point_names'] = "";
+            foreach($question_know_point_list as $p)
+            {
+                if(strstr(','.$val['know_point'].',',(string)$p['id']))
+                {
+                    $re['about'][$key]['know_point_names'] .= $p['title'];
+                }
+            }
+        }
+
+        return my_json($re);
     }
 }

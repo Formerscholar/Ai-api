@@ -15,8 +15,9 @@ class StudentStudy extends Validate{
         'course_id' =>  'require|integer',
         'student_id'    =>  'require|integer',
         'study_time'=>  'require',
-        'content' =>  'require|max:20',
+        'content' =>  'require|max:1000',
         'paper_id'  =>  'require|integer',
+        'questions'  =>  'array',
     ];
     protected $message  =   [
 

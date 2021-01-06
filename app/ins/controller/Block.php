@@ -115,10 +115,13 @@ class Block extends Admin{
         $page = input("get.page",1,"int");
         $limit = input("get.limit",10,"int");
         $keyword = input("get.keyword","");
+        $school_id = request()->get("school_id",0,"int");
 
         $where = [];
         if($keyword)
             $where[] = ['name|mobile','like',"%{$keyword}%"];
+        if($school_id)
+            $where[] = ["school_id","=",$school_id];
 
         return my_json(Student::scope("ins_id")->where($where)->field("id,name")->page($page)->limit($limit)->select());
     }
