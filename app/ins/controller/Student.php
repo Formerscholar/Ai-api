@@ -213,13 +213,17 @@ class Student extends Admin{
 //                "name"  =>  $type_list[$item['question_type']]['title'],
 //            ];
 //        }
+
         //按知识点统计
         $total_count = StudentResult::where($where)->count();
         $know_point_ids = StudentResult::where($where)->column("question_know_point");
         $know_point_ids = array_filter(array_unique(explode(",",join(",",$know_point_ids))));
-        $know_point_list = Knowledge::where("id","in",$know_point_ids)->orderRaw("field(id,".join(",",$know_point_ids).")")->select();
+        if(!empty($know_point_ids))
+            $know_point_list = Knowledge::where("id","in",$know_point_ids)->orderRaw("field(id,".join(",",$know_point_ids).")")->select();
+        else
+            $know_point_list = [];
 
-        if($know_point_list)
+        if(!empty($know_point_list))
             $know_point_list = array_column($know_point_list->toArray(),null,"id");
         $result =[];
         $other_count = $total_count;
@@ -252,7 +256,7 @@ class Student extends Admin{
                 "name"  =>  $item['name'],
             ];
         }
-        
+
         return my_json($re);
     }
 }
