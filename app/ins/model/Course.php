@@ -26,8 +26,8 @@ class Course extends Base{
     }
 
     public static function format_list(Array $list = []){
-        $school_ids = fetch_array_value($list,'school_id');
-        $school_list = School::get_all(["id" => $school_ids],"id,name");
+        $school_ids = fetch_array_value($list,'school_ids');
+        $school_list = School::get_all(["id" => array_filter(array_unique(explode(",",join(",",$school_ids))))],"id,name");
         if($school_list)
             $school_list = array_column($school_list,null,"id");
 
@@ -38,9 +38,17 @@ class Course extends Base{
 
         foreach($list as &$item)
         {
-            if(isset($item['school_id']))
+            if(isset($item['school_ids']))
             {
-                $item['school_data'] = isset($school_list[$item['school_id']])?$school_list[$item['school_id']]:[];
+                $item['school_data'] = [];
+
+                foreach($school_list as $value)
+                {
+                    if(strstr(','.$item['school_ids'].',',(string)$value['id']))
+                    {
+                        $item['school_data'][] = $value;
+                    }
+                }
             }
             if(isset($item['subject_id']))
                 $item['subject_data'] = isset($subject_list[$item['subject_id']]) ? $subject_list[$item['subject_id']] : [];

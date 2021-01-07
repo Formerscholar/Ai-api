@@ -161,7 +161,12 @@ class Question extends Admin
         $re['question']['type_name'] = QuestionCategory::where("id",$re['question']['type'])->column('title');
         if(!empty($re['question']['type_name']))
             $re['question']['type_name'] = join(",",$re['question']['type_name']);
-        $question_know_point_list = Knowledge::get_all(["id" => array_filter(array_unique(explode(",",$re['question']['know_point'])))],"id,title");
+
+        if($re['question']['know_point'])
+            $question_know_point_list = Knowledge::get_all(["id" => array_filter(array_unique(explode(",",$re['question']['know_point'])))],"id,title");
+        else
+            $question_know_point_list = [];
+
         $re['question']['know_point_names'] = "";
         foreach($question_know_point_list as $p)
         {

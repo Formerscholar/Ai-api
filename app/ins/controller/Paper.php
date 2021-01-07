@@ -5,8 +5,10 @@ namespace app\ins\controller;
 
 use app\BaseController;
 use app\ins\model\Basket;
+use app\ins\model\Knowledge;
 use app\ins\model\PaperQuestion;
 use app\ins\model\Question;
+use app\ins\model\QuestionCategory;
 use app\ins\model\QuestionOption;
 use PhpOffice\PhpWord\PhpWord;
 use PhpOffice\PhpWord\SimpleType\JcTable;
@@ -225,11 +227,107 @@ class Paper extends Admin
 
         return my_json([],0,"删除试卷成功");
     }
+    //试卷详情
+    public function detail(){
+        $paper_id = request()->get('paper_id',0,"int");
+        $paper_row = \app\ins\model\Paper::where('id',$paper_id)->find();
+        if(!$paper_row){
+            return my_json([],-1,"未找到该试卷");
+        }
+
+        $re = [];
+        $re['paper'] = $paper_row->getData();
+
+        $local_question_list = PaperQuestion::where("paper_id",$paper_id)->order('id','asc')->select()->toArray();
+        $question_ids = array_column($local_question_list,"question_id");
+        $server_question_list = Question::where("id","in",$question_ids)->orderRaw("field(id,".join(",",$question_ids).")")->select()->toArray();
+        $server_question_list = array_column($server_question_list,null,"id");
+        foreach($local_question_list as $key => $val)
+        {
+            if(isset($server_question_list[$val['question_id']]))
+                $local_question_list[$key]['question_data'] = $server_question_list[$val['question_id']];
+        }
+        $re['questions'] = $local_question_list;
+        /*试卷分析*/
+        $countScore = 0;
+        $generalAnalysis = array();//总分析
+        $typeAnalysis = array();//题量分析
+        $levelAnalysis = array();//题量分析
+        $knowAnalysis = array();//知识点分析
+        $knowAnalysisCount = 0;
+        $exerciseCount = 0;
+
+        foreach ($re['questions'] as $k => $v){
+            if($v['parent_id'] == 2){
+                $countScore = $countScore + $v['score'];
+                $exerciseCount++;
+                if(!empty($v['question_data']['know_point'])){
+                    $know = Knowledge::whereIn('id',explode(',',$v['question_data']['know_point']))->select();
+                    $knowledgeName = array();
+                    foreach ($know as $val){
+                        array_push($knowledgeName,$val['title']);
+                    }
+                    $re['questions'][$k]['question_data']['knowName'] = implode(',',$knowledgeName);
+                    foreach ($know as $value){
+                        $knowAnalysisCount++;
+                        if(isset($knowAnalysis[$value['id']])){
+                            $knowAnalysis[$value['id']][0] = $knowAnalysis[$value['id']][0] + 1;
+                        } else {
+                            $knowAnalysis[$value['id']][0] = 1;
+                            $knowAnalysis[$value['id']][1] = $value['title'];
+                        }
+                    }
+                } else {
+                    $re['questions'][$k]['question_data']['knowName'] = '';
+                }
+                if(($v['question_data']['type'] == 59 || $v['question_data']['type'] == 23) && $v['question_data']['option_num'] != 1){
+                    $contentsAll = $this->getContentAll($v['question_data']['id'],$v['question_data']['content'],$v['question_data']['option_num']);
+                    $re['questions'][$k]['question_data']['content_all'] = $contentsAll;
+                }
+                if(isset($typeAnalysis[$v['question_data']['type']])){
+                    $typeAnalysis[$v['question_data']['type']][0] = $typeAnalysis[$v['question_data']['type']][0] + 1;
+                    $typeAnalysis[$v['question_data']['type']][2] = $typeAnalysis[$v['question_data']['type']][2] + $v['score'];
+                } else {
+                    $typeAnalysis[$v['question_data']['type']][0] = 1;
+                    $type = QuestionCategory::find($v['question_data']['type']);
+                    $typeAnalysis[$v['question_data']['type']][1] = $type->title;
+                    $typeAnalysis[$v['question_data']['type']][2] = $v['score'];
+                }
+                if(isset($levelAnalysis[$v['question_data']['level']])){
+                    $levelAnalysis[$v['question_data']['level']][0] = $levelAnalysis[$v['question_data']['level']][0] + 1;
+                } else {
+                    $level = array(1=>'容易',2=>'较易',3=>'中等',4=>'较难',5=>'困难');
+                    $levelAnalysis[$v['question_data']['level']][0] = 1;
+                    $levelAnalysis[$v['question_data']['level']][1] = $level[$v['question_data']['level']];
+                }
+            }
+        }
+        $generalAnalysisData = PaperQuestion::where('paper_id',$paper_id)->where('parent_id',0)->order('sort','desc')->select();
+        foreach ($generalAnalysisData as $key => $val){
+            $scoreCount = PaperQuestion::where('paper_id',$paper_id)->sum('score');
+            $generalAnalysis[$key] = array($val['title'],$scoreCount);
+        }
+        foreach ($knowAnalysis as $key => $val){
+            $knowAnalysis[$key][2] = round($val[0] / $knowAnalysisCount,2) * 100;
+        }
+        foreach ($typeAnalysis as $key => $val){
+            $typeAnalysis[$key][3] = round($val[0] / $exerciseCount,2) * 100;
+            $typeAnalysis[$key][4] = round($val[2] / $countScore,2) * 100;
+        }
+        $re['countScore'] = $countScore;
+        $re['generalAnalysis'] = array_merge($generalAnalysis);
+        $re['typeAnalysis'] = array_merge($typeAnalysis);
+        $re['levelAnalysi'] = array_merge($levelAnalysis);
+        $re['knowAnalysis'] = array_merge($knowAnalysis);
+
+
+        return my_json($re);
+    }
     //下载答题卡
     public function downloadAnswerSheet(){
         $type = request()->get('type',1);//1普通2标准3密集
         $paper_id = request()->get('paper_id',0);
-        $paper_row = \app\ins\model\Paper::where('id',$paper_id)->where('uid',$this->uid)->find();
+        $paper_row = \app\ins\model\Paper::where('id',$paper_id)->find();
         if(!$paper_row){
             return my_json([],-1,"未找到该试卷");
         }
@@ -652,7 +750,7 @@ class Paper extends Admin
     /*获取contentAll*/
     protected function getContentAll($id,$content,$optionNum){
         $contentAll = $content.'<table width=100%><tr>';
-        $exerciseOption = ZExercisesOption::where('exercises_id',$id)->get()->toArray();
+        $exerciseOption = QuestionOption::where('exercises_id',$id)->select()->toArray();
         foreach ($exerciseOption as $k => $v){
 
             $contentAll.='<td>'.$v['option'].'</td>';

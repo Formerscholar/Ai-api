@@ -28,11 +28,11 @@ class Course extends Admin{
         if($keyword)
             $where[] = ['name','like',"%{$keyword}%"];
         if($school_id)
-            $where[] = ['school_id','like',"%{$school_id}%"];
+            $where[] = ['school_ids','find in set',$school_id];
         if($subject_id)
-            $where[] = ['subject_id','like',"%{$subject_id}%"];
+            $where[] = ['subject_id','=',$subject_id];
 
-        $list = \app\ins\model\Course::get_page($where,"id,name,add_time,school_id,subject_id","id DESC",$page,$limit);
+        $list = \app\ins\model\Course::get_page($where,"id,name,add_time,school_ids,subject_id","id DESC",$page,$limit);
         $list['list'] = \app\ins\model\Course::format_list($list['list']);
 
         return my_json($list);
@@ -42,6 +42,7 @@ class Course extends Admin{
         $post_data = request()->except(["id"]);
         validate(\app\ins\validate\Course::class)->check($post_data);
 
+        $post_data['school_ids'] = join(",",$post_data['school_ids']);
         $post_data['uids'] = $this->uid;
         $post_data['ins_id'] = $this->ins_id;
         $post_data['add_time'] = time();
@@ -68,6 +69,7 @@ class Course extends Admin{
         if(!$model)
             return my_json([],-1,"课程数据不存在");
 
+        $data['school_ids'] = join(",",$data['school_ids']);
         $data['update_time'] = time();
         $model->save($data);
 

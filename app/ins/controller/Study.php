@@ -80,13 +80,27 @@ class Study extends Admin{
 
         $paper_id = request()->post("paper_id",0,"int");
         $paper = Paper::scope("ins_id")->find($paper_id);
-        if(!$paper)
-            return my_json([],-1,"未找到试卷数据");
-
-        $questions = request()->post("questions",[]);
+        $insert_result_data = [];
+        if($paper)
+        {
+            $questions = request()->post("questions",[]);
+            foreach($questions as $question)
+            {
+                $insert_result_data[] = [
+                    "paper_id"  =>  $paper_id,
+                    "question_id"   =>  $question['question_id'],
+                    "subject_id"    =>  $question['subject_id'],
+                    "question_type"    =>  $question['question_type'],
+                    "question_know_point"    =>  $question['question_know_point'],
+                    "student_id"    =>  $student_id,
+                    "add_time"  =>  time(),
+                ];
+            }
+        }
 
         $insert_study_data = [
             "ins_id"    =>  $this->ins_id,
+            "school_id" =>  $post_data['school_id'],
             "course_id" =>  $course_id,
             "student_id"    =>  $student_id,
             "student_name"  =>  $student['name'],
@@ -97,19 +111,7 @@ class Study extends Admin{
             "uid"   =>  $this->uid,
             "mistake_count" =>  count($questions)
         ];
-        $insert_result_data = [];
-        foreach($questions as $question)
-        {
-            $insert_result_data[] = [
-                "paper_id"  =>  $paper_id,
-                "question_id"   =>  $question['question_id'],
-                "subject_id"    =>  $question['subject_id'],
-                "question_type"    =>  $question['question_type'],
-                "question_know_point"    =>  $question['question_know_point'],
-                "student_id"    =>  $student_id,
-                "add_time"  =>  time(),
-            ];
-        }
+
         \think\facade\Db::startTrans();
         try {
             //插入学习记录数据
@@ -118,9 +120,12 @@ class Study extends Admin{
             {
                 $insert_result_data[$key]['study_id'] = $study_model->id;
             }
-            //插入学习记录错题题目关系数据
-            $result_model = new StudentResult();
-            $result_model->saveAll($insert_result_data);
+            if(count($insert_result_data))
+            {
+                //插入学习记录错题题目关系数据
+                $result_model = new StudentResult();
+                $result_model->saveAll($insert_result_data);
+            }
             //更新学生课程课时
             CourseBuy::update(["used_hour" => Db::raw('used_hour+1')],["id"  =>  $course_buy['id']]);
             // 提交事务
@@ -162,10 +167,25 @@ class Study extends Admin{
 
         $paper_id = request()->post("paper_id",0,"int");
         $paper = Paper::scope("ins_id")->find($paper_id);
-        if(!$paper)
-            return my_json([],-1,"未找到试卷数据");
+        $insert_result_data = [];
+        if($paper)
+        {
+            $questions = request()->post("questions",[]);
 
-        $questions = request()->post("questions",[]);
+            foreach($questions as $question)
+            {
+                $insert_result_data[] = [
+                    "study_id"  =>  $id,
+                    "paper_id"  =>  $paper_id,
+                    "question_id"   =>  $question['question_id'],
+                    "subject_id"    =>  $question['subject_id'],
+                    "question_type"    =>  $question['question_type'],
+                    "student_id"    =>  $study['student_id'],
+                    "add_time"  =>  time(),
+                ];
+            }
+        }
+
         $update_study_data = [
             "content"   =>  $post_data['content'],
             "study_time"    =>  $post_data['study_time'],
@@ -173,27 +193,18 @@ class Study extends Admin{
             "update_time"   =>  time(),
             "mistake_count" =>  count($questions)
         ];
-        $insert_result_data = [];
-        foreach($questions as $question)
-        {
-            $insert_result_data[] = [
-                "study_id"  =>  $id,
-                "paper_id"  =>  $paper_id,
-                "question_id"   =>  $question['question_id'],
-                "subject_id"    =>  $question['subject_id'],
-                "question_type"    =>  $question['question_type'],
-                "student_id"    =>  $study['student_id'],
-                "add_time"  =>  time(),
-            ];
-        }
+
         \think\facade\Db::startTrans();
         try {
             //插入学习记录数据
             $study_model = StudentStudy::update($update_study_data,["id"    =>  $id]);
             //插入学习记录错题题目关系数据
             StudentResult::where("study_id",$id)->delete();
-            $result_model = new StudentResult();
-            $result_model->saveAll($insert_result_data);
+            if(count($insert_result_data))
+            {
+                $result_model = new StudentResult();
+                $result_model->saveAll($insert_result_data);
+            }
             // 提交事务
             \think\facade\Db::commit();
 

@@ -39,7 +39,7 @@ class Login extends BaseController
         //执行登录
         User::doLogin($user_model->getData());
 
-        return my_json([],0,"登录成功");
+        return my_json($user_model->getData(),0,"登录成功");
     }
     //获得微信授权登录地址,给前端生成二维码
     public function getWxAuthUrl(){

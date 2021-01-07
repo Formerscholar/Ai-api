@@ -36,7 +36,7 @@ class StudentStudy extends Base{
             $paper_list = array_column($paper_list,null,"id");
 
         $uids = fetch_array_value($list,'uid');
-        $user_list = Course::get_all(["id" => $uids],"*");
+        $user_list = User::get_all(["id" => $uids],"*");
         if($user_list)
             $user_list = array_column($user_list,null,"id");
 

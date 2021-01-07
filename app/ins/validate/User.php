@@ -38,8 +38,12 @@ class User extends Validate{
         return $this->only(['password','name','sex','is_enable','school_id','subject_id'])
             ->remove('password', 'require');
     }
-    // 当前用户
+    // 修改当前用户信息
     public function sceneEditUserinfo(){
-        return $this->only(["name","sex","school_id"]);
+        return $this->only(["name","sex"]);
+    }
+    // 修改当前用户密码
+    public function sceneUpdatePassword(){
+        return $this->only(["password","repassword"]);
     }
 }

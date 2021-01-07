@@ -368,4 +368,9 @@ class Basket extends Admin{
 
         return my_json([],0,"操作成功");
     }
+
+    //试卷分析
+    public function analysis(){
+
+    }
 }

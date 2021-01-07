@@ -18,12 +18,44 @@ use app\ins\model\Question;
 use app\ins\model\QuestionCategory;
 use app\ins\model\School;
 use app\ins\model\Student;
+use app\ins\model\StudentResult;
 use app\ins\model\Subject;
 use app\ins\model\Team;
 use app\ins\model\User;
 use think\facade\Filesystem;
 
 class Block extends Admin{
+    //获得学生的错题列表
+    public function getStudentQuestionList(){
+        $id = request()->get("id",0,"int");
+        $subject_id = request()->get("subject_id",0,"int");
+        $page = input("get.page",1,"int");
+        $limit = input("get.limit",10,"int");
+
+        $wh = [];
+        if($id)
+            $wh[] = ["student_id","=",$id];
+        if($subject_id)
+            $wh[] = ["subject_id","=",$subject_id];
+
+        $res = StudentResult::get_page($wh,"*","id DESC",$page,$limit);
+        $question_ids = array_column($res['list'],"question_id");
+        if(!empty($question_ids))
+            $question_list = Question::where("id","in",$question_ids)->field("id,content")->orderRaw("field(id,".join(",",$question_ids).")")->select()->toArray();
+        else
+            $question_list = [];
+        $question_list = array_column($question_list,null,"id");
+
+        foreach($res['list'] as $key=>$val)
+        {
+            if(isset($val['question_id']))
+            {
+                $res['list'][$key]['question_data'] = isset($question_list[$val['question_id']])?$question_list[$val['question_id']]:[];
+            }
+        }
+
+        return my_json($res);
+    }
     //图片上传
     public function uploadImg(){
         $file = request()->file('image');
@@ -54,7 +86,7 @@ class Block extends Admin{
 
         $wh = [];
         if($school_id)
-            $wh[] = ["school_id","=",$school_id];
+            $wh[] = ["school_ids","find in set",$school_id];
         $result = Course::scope("ins_id")->where($wh)->select();
         return my_json($result);
     }

@@ -13,7 +13,7 @@ use think\Validate;
 class Course extends Validate{
     protected $rule = [
         'name' =>  'require|max:20',
-        'school_id' =>  'require|integer',
+        'school_ids' =>  'require|array',
         'subject_id' =>  'require|integer',
     ];
     protected $message  =   [
