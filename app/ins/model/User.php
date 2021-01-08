@@ -69,6 +69,8 @@ class User extends Base
 
         session("user",$user);
         session("user_sign",data_auth_sign($user));
+        cookie("user",base64_encode(json_encode($user)));
+        cookie("user_sign",data_auth_sign($user));
     }
     //登出
     public static function doLogout(){

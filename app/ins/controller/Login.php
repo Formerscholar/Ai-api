@@ -7,6 +7,7 @@ use app\BaseController;
 use app\ins\model\Institution;
 use app\ins\model\Question;
 use app\ins\model\Role;
+use app\ins\model\Subject;
 use app\ins\model\Teacher;
 use app\ins\model\User;
 use org\Exercises;
@@ -39,7 +40,7 @@ class Login extends BaseController
         //执行登录
         User::doLogin($user_model->getData());
 
-        return my_json([
+        $re = [
             "id"    =>  $user_model['id'],
             "name"  =>  $user_model['name'],
             "role_id"   =>  $user_model['role_id'],
@@ -48,7 +49,14 @@ class Login extends BaseController
             "avatar" =>  $user_model['avatar'],
             "school_id" =>  $user_model['school_id'],
             "subject_id"    =>  $user_model['subject_id'],
-        ],0,"登录成功");
+        ];
+        $subject_model = Subject::find($user_model['subject_id']);
+        if($subject_model)
+            $re['subject_name'] = $subject_model['title'];
+        else
+            $re['subject_name'] = "";
+
+        return my_json($re,0,"登录成功");
     }
     //获得微信授权登录地址,给前端生成二维码
     public function getWxAuthUrl(){
