@@ -10,12 +10,13 @@ use app\ins\model\Role;
 use app\ins\model\Teacher;
 use app\ins\model\User;
 use org\Exercises;
+use think\facade\View;
 use think\Request;
 use WeChat\Oauth;
 
-class Index extends Admin
+class Index extends BaseController
 {
     public function index(){
-        return my_json([],0,"");
+        return View::fetch();
     }
 }
