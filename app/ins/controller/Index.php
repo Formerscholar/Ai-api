@@ -13,7 +13,7 @@ use org\Exercises;
 use think\Request;
 use WeChat\Oauth;
 
-class Index extends BaseController
+class Index extends Admin
 {
     public function index(){
         return my_json([],0,"");

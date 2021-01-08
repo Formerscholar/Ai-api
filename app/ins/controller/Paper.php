@@ -24,12 +24,14 @@ class Paper extends Admin
         $page = input("get.page",1,"int");
         $limit = input("get.limit",10,"int");
 
+        $where = [];
         $where[] = ["ins_id","=",$this->ins_id];
+        $where[] = ["uid",'=',$this->uid];
         $keyword = input("get.keyword","");
         if($keyword)
             $where[] = ['name','like',"%{$keyword}%"];
 
-        $list = \app\ins\model\Paper::get_page($where,"*","sort ASC",$page,$limit);
+        $list = \app\ins\model\Paper::get_page($where,"*","id DESC",$page,$limit);
         $list['list'] = \app\ins\model\Paper::format_list($list['list']);
 
         return my_json($list);
