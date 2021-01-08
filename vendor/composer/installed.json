@@ -13,13 +13,7 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/aliyun/aliyun-oss-php-sdk/zipball/492866331b7bafaac09506cf42f351b7e9e63766",
                 "reference": "492866331b7bafaac09506cf42f351b7e9e63766",
-                "shasum": "",
-                "mirrors": [
-                    {
-                        "url": "https://mirrors.aliyun.com/composer/dists/%package%/%reference%.%type%",
-                        "preferred": true
-                    }
-                ]
+                "shasum": ""
             },
             "require": {
                 "php": ">=5.3"
@@ -55,6 +49,63 @@
             "install-path": "../aliyuncs/oss-sdk-php"
         },
         {
+            "name": "ezyang/htmlpurifier",
+            "version": "v4.13.0",
+            "version_normalized": "4.13.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/ezyang/htmlpurifier.git",
+                "reference": "08e27c97e4c6ed02f37c5b2b20488046c8d90d75"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ezyang/htmlpurifier/zipball/08e27c97e4c6ed02f37c5b2b20488046c8d90d75",
+                "reference": "08e27c97e4c6ed02f37c5b2b20488046c8d90d75",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.2"
+            },
+            "require-dev": {
+                "simpletest/simpletest": "dev-master#72de02a7b80c6bb8864ef9bf66d41d2f58f826bd"
+            },
+            "time": "2020-06-29T00:56:53+00:00",
+            "type": "library",
+            "installation-source": "dist",
+            "autoload": {
+                "psr-0": {
+                    "HTMLPurifier": "library/"
+                },
+                "files": [
+                    "library/HTMLPurifier.composer.php"
+                ],
+                "exclude-from-classmap": [
+                    "/library/HTMLPurifier/Language/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "LGPL-2.1-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "Edward Z. Yang",
+                    "email": "admin@htmlpurifier.org",
+                    "homepage": "http://ezyang.com"
+                }
+            ],
+            "description": "Standards compliant HTML filter written in PHP",
+            "homepage": "http://htmlpurifier.org/",
+            "keywords": [
+                "html"
+            ],
+            "support": {
+                "issues": "https://github.com/ezyang/htmlpurifier/issues",
+                "source": "https://github.com/ezyang/htmlpurifier/tree/master"
+            },
+            "install-path": "../ezyang/htmlpurifier"
+        },
+        {
             "name": "lcobucci/jwt",
             "version": "3.4.2",
             "version_normalized": "3.4.2.0",
@@ -67,13 +118,7 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/lcobucci/jwt/zipball/17cb82dd625ccb17c74bf8f38563d3b260306483",
                 "reference": "17cb82dd625ccb17c74bf8f38563d3b260306483",
-                "shasum": "",
-                "mirrors": [
-                    {
-                        "url": "https://mirrors.aliyun.com/composer/dists/%package%/%reference%.%type%",
-                        "preferred": true
-                    }
-                ]
+                "shasum": ""
             },
             "require": {
                 "ext-mbstring": "*",
@@ -381,13 +426,7 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/maennchen/ZipStream-PHP/zipball/c4c5803cc1f93df3d2448478ef79394a5981cc58",
                 "reference": "c4c5803cc1f93df3d2448478ef79394a5981cc58",
-                "shasum": "",
-                "mirrors": [
-                    {
-                        "url": "https://mirrors.aliyun.com/composer/dists/%package%/%reference%.%type%",
-                        "preferred": true
-                    }
-                ]
+                "shasum": ""
             },
             "require": {
                 "myclabs/php-enum": "^1.5",
@@ -461,13 +500,7 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/MarkBaker/PHPComplex/zipball/9999f1432fae467bc93c53f357105b4c31bb994c",
                 "reference": "9999f1432fae467bc93c53f357105b4c31bb994c",
-                "shasum": "",
-                "mirrors": [
-                    {
-                        "url": "https://mirrors.aliyun.com/composer/dists/%package%/%reference%.%type%",
-                        "preferred": true
-                    }
-                ]
+                "shasum": ""
             },
             "require": {
                 "php": "^7.2 || ^8.0"
@@ -569,13 +602,7 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/MarkBaker/PHPMatrix/zipball/9567d9c4c519fbe40de01dbd1e4469dbbb66f46a",
                 "reference": "9567d9c4c519fbe40de01dbd1e4469dbbb66f46a",
-                "shasum": "",
-                "mirrors": [
-                    {
-                        "url": "https://mirrors.aliyun.com/composer/dists/%package%/%reference%.%type%",
-                        "preferred": true
-                    }
-                ]
+                "shasum": ""
             },
             "require": {
                 "php": "^7.2 || ^8.0"
@@ -652,13 +679,7 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/myclabs/php-enum/zipball/d178027d1e679832db9f38248fcc7200647dc2b7",
                 "reference": "d178027d1e679832db9f38248fcc7200647dc2b7",
-                "shasum": "",
-                "mirrors": [
-                    {
-                        "url": "https://mirrors.aliyun.com/composer/dists/%package%/%reference%.%type%",
-                        "preferred": true
-                    }
-                ]
+                "shasum": ""
             },
             "require": {
                 "ext-json": "*",
@@ -721,13 +742,7 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/ivanlanin/pclzip/zipball/19dd1de9d3f5fc4d7d70175b4c344dee329f45fd",
                 "reference": "19dd1de9d3f5fc4d7d70175b4c344dee329f45fd",
-                "shasum": "",
-                "mirrors": [
-                    {
-                        "url": "https://mirrors.aliyun.com/composer/dists/%package%/%reference%.%type%",
-                        "preferred": true
-                    }
-                ]
+                "shasum": ""
             },
             "time": "2014-06-05T11:42:24+00:00",
             "type": "library",
@@ -771,13 +786,7 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/PHPOffice/Common/zipball/edb5d32b1e3400a35a5c91e2539ed6f6ce925e4d",
                 "reference": "edb5d32b1e3400a35a5c91e2539ed6f6ce925e4d",
-                "shasum": "",
-                "mirrors": [
-                    {
-                        "url": "https://mirrors.aliyun.com/composer/dists/%package%/%reference%.%type%",
-                        "preferred": true
-                    }
-                ]
+                "shasum": ""
             },
             "require": {
                 "pclzip/pclzip": "^2.8",
@@ -828,24 +837,18 @@
         },
         {
             "name": "phpoffice/phpspreadsheet",
-            "version": "1.15.0",
-            "version_normalized": "1.15.0.0",
+            "version": "1.16.0",
+            "version_normalized": "1.16.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/PHPOffice/PhpSpreadsheet.git",
-                "reference": "a8e8068b31b8119e1daa5b1eb5715a3a8ea8305f"
+                "reference": "76d4323b85129d0c368149c831a07a3e258b2b50"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/PHPOffice/PhpSpreadsheet/zipball/a8e8068b31b8119e1daa5b1eb5715a3a8ea8305f",
-                "reference": "a8e8068b31b8119e1daa5b1eb5715a3a8ea8305f",
-                "shasum": "",
-                "mirrors": [
-                    {
-                        "url": "https://mirrors.aliyun.com/composer/dists/%package%/%reference%.%type%",
-                        "preferred": true
-                    }
-                ]
+                "url": "https://api.github.com/repos/PHPOffice/PhpSpreadsheet/zipball/76d4323b85129d0c368149c831a07a3e258b2b50",
+                "reference": "76d4323b85129d0c368149c831a07a3e258b2b50",
+                "shasum": ""
             },
             "require": {
                 "ext-ctype": "*",
@@ -861,10 +864,11 @@
                 "ext-xmlwriter": "*",
                 "ext-zip": "*",
                 "ext-zlib": "*",
+                "ezyang/htmlpurifier": "^4.13",
                 "maennchen/zipstream-php": "^2.1",
-                "markbaker/complex": "^1.5|^2.0",
-                "markbaker/matrix": "^1.2|^2.0",
-                "php": "^7.2|^8.0",
+                "markbaker/complex": "^1.5||^2.0",
+                "markbaker/matrix": "^1.2||^2.0",
+                "php": "^7.2||^8.0",
                 "psr/http-client": "^1.0",
                 "psr/http-factory": "^1.0",
                 "psr/simple-cache": "^1.0"
@@ -875,7 +879,7 @@
                 "jpgraph/jpgraph": "^4.0",
                 "mpdf/mpdf": "^8.0",
                 "phpcompatibility/php-compatibility": "^9.3",
-                "phpunit/phpunit": "^8.5|^9.3",
+                "phpunit/phpunit": "^8.5||^9.3",
                 "squizlabs/php_codesniffer": "^3.5",
                 "tecnickcom/tcpdf": "^6.3"
             },
@@ -885,7 +889,7 @@
                 "mpdf/mpdf": "Option for rendering PDF with PDF Writer",
                 "tecnickcom/tcpdf": "Option for rendering PDF with PDF Writer (doesn't yet support PHP8)"
             },
-            "time": "2020-10-11T13:20:59+00:00",
+            "time": "2020-12-31T18:03:49+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -931,7 +935,7 @@
             ],
             "support": {
                 "issues": "https://github.com/PHPOffice/PhpSpreadsheet/issues",
-                "source": "https://github.com/PHPOffice/PhpSpreadsheet/tree/1.15.0"
+                "source": "https://github.com/PHPOffice/PhpSpreadsheet/tree/1.16.0"
             },
             "install-path": "../phpoffice/phpspreadsheet"
         },
@@ -948,13 +952,7 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/PHPOffice/PHPWord/zipball/b8346af548d399acd9e30fc76ab0c55c2fec03a5",
                 "reference": "b8346af548d399acd9e30fc76ab0c55c2fec03a5",
-                "shasum": "",
-                "mirrors": [
-                    {
-                        "url": "https://mirrors.aliyun.com/composer/dists/%package%/%reference%.%type%",
-                        "preferred": true
-                    }
-                ]
+                "shasum": ""
             },
             "require": {
                 "ext-xml": "*",
@@ -1190,13 +1188,7 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/php-fig/http-client/zipball/2dfb5f6c5eff0e91e20e913f8c5452ed95b86621",
                 "reference": "2dfb5f6c5eff0e91e20e913f8c5452ed95b86621",
-                "shasum": "",
-                "mirrors": [
-                    {
-                        "url": "https://mirrors.aliyun.com/composer/dists/%package%/%reference%.%type%",
-                        "preferred": true
-                    }
-                ]
+                "shasum": ""
             },
             "require": {
                 "php": "^7.0 || ^8.0",
@@ -1251,13 +1243,7 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/php-fig/http-factory/zipball/12ac7fcd07e5b077433f5f2bee95b3a771bf61be",
                 "reference": "12ac7fcd07e5b077433f5f2bee95b3a771bf61be",
-                "shasum": "",
-                "mirrors": [
-                    {
-                        "url": "https://mirrors.aliyun.com/composer/dists/%package%/%reference%.%type%",
-                        "preferred": true
-                    }
-                ]
+                "shasum": ""
             },
             "require": {
                 "php": ">=7.0.0",
@@ -1315,13 +1301,7 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/php-fig/http-message/zipball/f6561bf28d520154e4b0ec72be95418abe6d9363",
                 "reference": "f6561bf28d520154e4b0ec72be95418abe6d9363",
-                "shasum": "",
-                "mirrors": [
-                    {
-                        "url": "https://mirrors.aliyun.com/composer/dists/%package%/%reference%.%type%",
-                        "preferred": true
-                    }
-                ]
+                "shasum": ""
             },
             "require": {
                 "php": ">=5.3.0"
@@ -1496,13 +1476,7 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/qiniu/php-sdk/zipball/0a461e13b09545b23df361843c6a65fdd3a26426",
                 "reference": "0a461e13b09545b23df361843c6a65fdd3a26426",
-                "shasum": "",
-                "mirrors": [
-                    {
-                        "url": "https://mirrors.aliyun.com/composer/dists/%package%/%reference%.%type%",
-                        "preferred": true
-                    }
-                ]
+                "shasum": ""
             },
             "require": {
                 "php": ">=5.3.3"
@@ -1549,24 +1523,18 @@
         },
         {
             "name": "symfony/polyfill-mbstring",
-            "version": "v1.20.0",
-            "version_normalized": "1.20.0.0",
+            "version": "v1.22.0",
+            "version_normalized": "1.22.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-mbstring.git",
-                "reference": "39d483bdf39be819deabf04ec872eb0b2410b531"
+                "reference": "f377a3dd1fde44d37b9831d68dc8dea3ffd28e13"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/39d483bdf39be819deabf04ec872eb0b2410b531",
-                "reference": "39d483bdf39be819deabf04ec872eb0b2410b531",
-                "shasum": "",
-                "mirrors": [
-                    {
-                        "url": "https://mirrors.aliyun.com/composer/dists/%package%/%reference%.%type%",
-                        "preferred": true
-                    }
-                ]
+                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/f377a3dd1fde44d37b9831d68dc8dea3ffd28e13",
+                "reference": "f377a3dd1fde44d37b9831d68dc8dea3ffd28e13",
+                "shasum": ""
             },
             "require": {
                 "php": ">=7.1"
@@ -1574,11 +1542,11 @@
             "suggest": {
                 "ext-mbstring": "For best performance"
             },
-            "time": "2020-10-23T14:02:19+00:00",
+            "time": "2021-01-07T16:49:33+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "1.20-dev"
+                    "dev-main": "1.22-dev"
                 },
                 "thanks": {
                     "name": "symfony/polyfill",
@@ -1618,7 +1586,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.20.0"
+                "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.22.0"
             },
             "funding": [
                 {
@@ -1638,33 +1606,27 @@
         },
         {
             "name": "symfony/polyfill-php72",
-            "version": "v1.20.0",
-            "version_normalized": "1.20.0.0",
+            "version": "v1.22.0",
+            "version_normalized": "1.22.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-php72.git",
-                "reference": "cede45fcdfabdd6043b3592e83678e42ec69e930"
+                "reference": "cc6e6f9b39fe8075b3dabfbaf5b5f645ae1340c9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-php72/zipball/cede45fcdfabdd6043b3592e83678e42ec69e930",
-                "reference": "cede45fcdfabdd6043b3592e83678e42ec69e930",
-                "shasum": "",
-                "mirrors": [
-                    {
-                        "url": "https://mirrors.aliyun.com/composer/dists/%package%/%reference%.%type%",
-                        "preferred": true
-                    }
-                ]
+                "url": "https://api.github.com/repos/symfony/polyfill-php72/zipball/cc6e6f9b39fe8075b3dabfbaf5b5f645ae1340c9",
+                "reference": "cc6e6f9b39fe8075b3dabfbaf5b5f645ae1340c9",
+                "shasum": ""
             },
             "require": {
                 "php": ">=7.1"
             },
-            "time": "2020-10-23T14:02:19+00:00",
+            "time": "2021-01-07T16:49:33+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "1.20-dev"
+                    "dev-main": "1.22-dev"
                 },
                 "thanks": {
                     "name": "symfony/polyfill",
@@ -1703,7 +1665,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-php72/tree/v1.20.0"
+                "source": "https://github.com/symfony/polyfill-php72/tree/v1.22.0"
             },
             "funding": [
                 {
@@ -1723,33 +1685,27 @@
         },
         {
             "name": "symfony/polyfill-php80",
-            "version": "v1.20.0",
-            "version_normalized": "1.20.0.0",
+            "version": "v1.22.0",
+            "version_normalized": "1.22.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-php80.git",
-                "reference": "e70aa8b064c5b72d3df2abd5ab1e90464ad009de"
+                "reference": "dc3063ba22c2a1fd2f45ed856374d79114998f91"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-php80/zipball/e70aa8b064c5b72d3df2abd5ab1e90464ad009de",
-                "reference": "e70aa8b064c5b72d3df2abd5ab1e90464ad009de",
-                "shasum": "",
-                "mirrors": [
-                    {
-                        "url": "https://mirrors.aliyun.com/composer/dists/%package%/%reference%.%type%",
-                        "preferred": true
-                    }
-                ]
+                "url": "https://api.github.com/repos/symfony/polyfill-php80/zipball/dc3063ba22c2a1fd2f45ed856374d79114998f91",
+                "reference": "dc3063ba22c2a1fd2f45ed856374d79114998f91",
+                "shasum": ""
             },
             "require": {
                 "php": ">=7.1"
             },
-            "time": "2020-10-23T14:02:19+00:00",
+            "time": "2021-01-07T16:49:33+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "1.20-dev"
+                    "dev-main": "1.22-dev"
                 },
                 "thanks": {
                     "name": "symfony/polyfill",
@@ -1795,7 +1751,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-php80/tree/v1.20.0"
+                "source": "https://github.com/symfony/polyfill-php80/tree/v1.22.0"
             },
             "funding": [
                 {
@@ -1998,13 +1954,7 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/top-think/think-captcha/zipball/1eef3717c1bcf4f5bbe2d1a1c704011d330a8b55",
                 "reference": "1eef3717c1bcf4f5bbe2d1a1c704011d330a8b55",
-                "shasum": "",
-                "mirrors": [
-                    {
-                        "url": "https://mirrors.aliyun.com/composer/dists/%package%/%reference%.%type%",
-                        "preferred": true
-                    }
-                ]
+                "shasum": ""
             },
             "require": {
                 "topthink/framework": "^6.0.0"
@@ -2112,13 +2062,7 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/top-think/think-image/zipball/8586cf47f117481c6d415b20f7dedf62e79d5512",
                 "reference": "8586cf47f117481c6d415b20f7dedf62e79d5512",
-                "shasum": "",
-                "mirrors": [
-                    {
-                        "url": "https://mirrors.aliyun.com/composer/dists/%package%/%reference%.%type%",
-                        "preferred": true
-                    }
-                ]
+                "shasum": ""
             },
             "require": {
                 "ext-gd": "*"
@@ -2340,13 +2284,7 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/zendframework/zend-escaper/zipball/3801caa21b0ca6aca57fa1c42b08d35c395ebd5f",
                 "reference": "3801caa21b0ca6aca57fa1c42b08d35c395ebd5f",
-                "shasum": "",
-                "mirrors": [
-                    {
-                        "url": "https://mirrors.aliyun.com/composer/dists/%package%/%reference%.%type%",
-                        "preferred": true
-                    }
-                ]
+                "shasum": ""
             },
             "require": {
                 "php": "^5.6 || ^7.0"
@@ -2392,24 +2330,18 @@
         },
         {
             "name": "zoujingli/wechat-developer",
-            "version": "v1.2.26",
-            "version_normalized": "1.2.26.0",
+            "version": "v1.2.27",
+            "version_normalized": "1.2.27.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/zoujingli/WeChatDeveloper.git",
-                "reference": "5ecafcd810627cd9217c3d7f18c7026612418278"
+                "reference": "94de6626f1c9e3d12f16640c30fb9319b37ff34c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/zoujingli/WeChatDeveloper/zipball/5ecafcd810627cd9217c3d7f18c7026612418278",
-                "reference": "5ecafcd810627cd9217c3d7f18c7026612418278",
-                "shasum": "",
-                "mirrors": [
-                    {
-                        "url": "https://mirrors.aliyun.com/composer/dists/%package%/%reference%.%type%",
-                        "preferred": true
-                    }
-                ]
+                "url": "https://api.github.com/repos/zoujingli/WeChatDeveloper/zipball/94de6626f1c9e3d12f16640c30fb9319b37ff34c",
+                "reference": "94de6626f1c9e3d12f16640c30fb9319b37ff34c",
+                "shasum": ""
             },
             "require": {
                 "ext-bcmath": "*",
@@ -2422,7 +2354,7 @@
                 "ext-xml": "*",
                 "php": ">=5.4"
             },
-            "time": "2020-09-13T06:01:11+00:00",
+            "time": "2020-12-24T09:44:04+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -2459,7 +2391,7 @@
             ],
             "support": {
                 "issues": "https://github.com/zoujingli/WeChatDeveloper/issues",
-                "source": "https://github.com/zoujingli/WeChatDeveloper/tree/v1.2.26"
+                "source": "https://github.com/zoujingli/WeChatDeveloper/tree/v1.2.27"
             },
             "install-path": "../zoujingli/wechat-developer"
         }

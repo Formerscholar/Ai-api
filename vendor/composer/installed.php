@@ -1,12 +1,12 @@
 <?php return array (
   'root' => 
   array (
-    'pretty_version' => '1.0.0+no-version-set',
-    'version' => '1.0.0.0',
+    'pretty_version' => 'dev-master',
+    'version' => 'dev-master',
     'aliases' => 
     array (
     ),
-    'reference' => NULL,
+    'reference' => '87f04abffb8174f1703efaa7195f4458234c9d81',
     'name' => 'topthink/think',
   ),
   'versions' => 
@@ -19,6 +19,15 @@
       array (
       ),
       'reference' => '492866331b7bafaac09506cf42f351b7e9e63766',
+    ),
+    'ezyang/htmlpurifier' => 
+    array (
+      'pretty_version' => 'v4.13.0',
+      'version' => '4.13.0.0',
+      'aliases' => 
+      array (
+      ),
+      'reference' => '08e27c97e4c6ed02f37c5b2b20488046c8d90d75',
     ),
     'lcobucci/jwt' => 
     array (
@@ -112,12 +121,12 @@
     ),
     'phpoffice/phpspreadsheet' => 
     array (
-      'pretty_version' => '1.15.0',
-      'version' => '1.15.0.0',
+      'pretty_version' => '1.16.0',
+      'version' => '1.16.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => 'a8e8068b31b8119e1daa5b1eb5715a3a8ea8305f',
+      'reference' => '76d4323b85129d0c368149c831a07a3e258b2b50',
     ),
     'phpoffice/phpword' => 
     array (
@@ -202,30 +211,30 @@
     ),
     'symfony/polyfill-mbstring' => 
     array (
-      'pretty_version' => 'v1.20.0',
-      'version' => '1.20.0.0',
+      'pretty_version' => 'v1.22.0',
+      'version' => '1.22.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => '39d483bdf39be819deabf04ec872eb0b2410b531',
+      'reference' => 'f377a3dd1fde44d37b9831d68dc8dea3ffd28e13',
     ),
     'symfony/polyfill-php72' => 
     array (
-      'pretty_version' => 'v1.20.0',
-      'version' => '1.20.0.0',
+      'pretty_version' => 'v1.22.0',
+      'version' => '1.22.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => 'cede45fcdfabdd6043b3592e83678e42ec69e930',
+      'reference' => 'cc6e6f9b39fe8075b3dabfbaf5b5f645ae1340c9',
     ),
     'symfony/polyfill-php80' => 
     array (
-      'pretty_version' => 'v1.20.0',
-      'version' => '1.20.0.0',
+      'pretty_version' => 'v1.22.0',
+      'version' => '1.22.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => 'e70aa8b064c5b72d3df2abd5ab1e90464ad009de',
+      'reference' => 'dc3063ba22c2a1fd2f45ed856374d79114998f91',
     ),
     'symfony/var-dumper' => 
     array (
@@ -247,12 +256,12 @@
     ),
     'topthink/think' => 
     array (
-      'pretty_version' => '1.0.0+no-version-set',
-      'version' => '1.0.0.0',
+      'pretty_version' => 'dev-master',
+      'version' => 'dev-master',
       'aliases' => 
       array (
       ),
-      'reference' => NULL,
+      'reference' => '87f04abffb8174f1703efaa7195f4458234c9d81',
     ),
     'topthink/think-captcha' => 
     array (
@@ -319,12 +328,12 @@
     ),
     'zoujingli/wechat-developer' => 
     array (
-      'pretty_version' => 'v1.2.26',
-      'version' => '1.2.26.0',
+      'pretty_version' => 'v1.2.27',
+      'version' => '1.2.27.0',
       'aliases' => 
       array (
       ),
-      'reference' => '5ecafcd810627cd9217c3d7f18c7026612418278',
+      'reference' => '94de6626f1c9e3d12f16640c30fb9319b37ff34c',
     ),
   ),
 );
