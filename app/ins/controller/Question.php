@@ -74,6 +74,9 @@ class Question extends Admin
         if(isset($tmp))
             $query->where('('.join(' OR ', $tmp).')');
         $question_page = [];
+        $question_page['count'] = $query->count();
+        $question_page['total_page'] = ceil($question_page['count']/$limit);
+        $question_page['page'] = $page;
         $question_page['list'] = $query->page($page)->limit($limit)->select()->toArray();
 
         //检测是否已经添加到组卷栏中
@@ -106,9 +109,6 @@ class Question extends Admin
                 }
             }
         }
-        $question_page['count'] = $query->count();
-        $question_page['total_page'] = ceil($question_page['count']/$limit);
-        $question_page['page'] = $page;
 
         $query2 = Knowledge::where($where_know);
         if(isset($tmp2))
