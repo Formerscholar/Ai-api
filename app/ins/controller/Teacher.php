@@ -50,7 +50,7 @@ class Teacher extends Admin{
     }
     //老师编辑保存
     public function save(){
-        $data = request()->except(["ins_id"]);
+        $data = request()->post();
 
         validate(\app\ins\validate\User::class)->scene("edit")->check($data);
 
@@ -68,7 +68,7 @@ class Teacher extends Admin{
     }
     //老师添加
     public function add(){
-        $post_data = request()->post();
+        $post_data = request()->except(["id"]);
 
         validate(\app\ins\validate\User::class)->scene("add")->check($post_data);
         $post_data['password'] = md5(config("my.default_password").config("my.password_secrect"));

@@ -245,6 +245,7 @@ class Student extends Admin{
             ];
 
         $re = [];
+        $re['student_data'] = $student->getData();
         $re['title'] = "学情报告";
         $re['xAxis'] = [];
         $re['yAxis'] = [];
