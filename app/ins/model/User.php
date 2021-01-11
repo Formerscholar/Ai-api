@@ -76,6 +76,9 @@ class User extends Base
     public static function doLogout(){
         session("user",null);
         session("user_sign",null);
+
+        cookie("user",null);
+        cookie("user_sign",null);
     }
     //用户绑定，weixin  绑定微信'
     public static function userBind($type = "weixin"){
