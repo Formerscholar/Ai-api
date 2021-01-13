@@ -15,5 +15,5 @@ return [
     // 过期时间
     'expire'         => 3600,
     // 前缀
-    'prefix'         => 'back',
+    'prefix'         => 'admin',
 ];

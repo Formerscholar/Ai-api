@@ -3,15 +3,10 @@ namespace app\admin\controller;
 
 use app\BaseController;
 
-class Index extends BaseController
+class Index extends Admin
 {
     public function index()
     {
         return "admin";
-    }
-
-    public function hello($name = 'ThinkPHP6')
-    {
-        return 'hello,' . $name;
     }
 }
