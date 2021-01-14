@@ -89,6 +89,9 @@ class Teacher extends Admin{
         if(empty($id))
             return my_json([],-1,"未选择要删除的数据");
 
+        if(User::where("id","in",$id)->where("role_id",1)->count())
+            return my_json([],-1,'不能删除机构管理员角色的人员');
+
         $model = new User();
         $batch_data = [];
         foreach($id as $i)

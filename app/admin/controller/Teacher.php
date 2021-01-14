@@ -39,42 +39,38 @@ class Teacher extends Admin
     public function edit(){
         $id = input("get.id");
 
-        $user_model = User::scope("ins_id")->field("*")->find($id);
+        $user_model = \app\admin\model\Teacher::find($id);
+        if(!$user_model)
+            return my_json([],-1,"未找到老师数据");
 
         return my_json($user_model->getData());
     }
     //老师编辑保存
     public function save(){
         $data = request()->post();
+        validate(\app\admin\validate\Teacher::class)->scene("edit")->check($data);
 
-        validate(\app\ins\validate\User::class)->scene("edit")->check($data);
-
-        $user_model = User::scope("ins_id")->find($data['id']);
+        $user_model = \app\admin\model\Teacher::find($data['id']);
         if(!$user_model)
             return my_json([],-1,"老师数据不存在");
 
         $data['update_time'] = time();
-        if(isset($data['password']) && $data['password'])
-            $data['password'] = md5($data['password'].$user_model['salt']);
-
         $user_model->save($data);
 
         return my_json([],0,"老师编辑保存成功");
     }
     //老师添加
     public function add(){
-        $post_data = request()->except(["id"]);
+        $post_data = request()->post();
+        validate(\app\admin\validate\Teacher::class)->scene("add")->check($post_data);
 
-        validate(\app\ins\validate\User::class)->scene("add")->check($post_data);
         $post_data['password'] = md5(config("my.default_password").config("my.password_secrect"));
         $post_data['salt'] = config("my.password_secrect");
-
-        $post_data['ins_id'] = $this->ins_id;
-        $post_data['role_id'] = 2;//角色：老师
         $post_data['add_time'] = time();
-        $student_model = User::create($post_data);
 
-        return my_json(["id"    =>  $student_model->id],0,"添加老师成功");
+        $model = \app\admin\model\Teacher::create($post_data);
+
+        return my_json(["id"    =>  $model->id],0,"添加老师成功");
     }
     //老师删除
     public function delete(){
