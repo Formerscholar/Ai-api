@@ -6,6 +6,7 @@ namespace app\ins\controller;
 use app\BaseController;
 use app\ins\model\Basket;
 use app\ins\model\Grade;
+use app\ins\model\Institution;
 use app\ins\model\Knowledge;
 use app\ins\model\QuestionCategory;
 use think\Request;
@@ -18,14 +19,26 @@ class Question extends Admin
         //查询条件
         $condition = [];
 
-        $w = [
-            ['is_enable','=',1],
-            ['is_delete','=',0]
-        ];
         $condition['level'] = config("my.question_level");//难度
-        $condition['grade'] = Grade::get_all($w,"id,name","sort ASC");//年级
-        $w[] = ['subject_ids','find in set',$this->subject_id];
-        $condition['type'] = QuestionCategory::get_all($w,"id,title as name","sort ASC");//题型
+
+        $curr_grade_ids = Institution::where("id",$this->ins_id)->column("grade_ids");
+        if(!empty($curr_grade_ids))
+        {
+            $curr_grade_ids = explode(",",current($curr_grade_ids));
+            $condition['grade'] = Grade::get_all([
+                ['is_enable','=',1],
+                ['is_delete','=',0],
+                ["id","in",$curr_grade_ids]
+            ],"id,name","sort ASC");//年级
+        }
+        else
+            $condition['grade'] = [];
+
+        $condition['type'] = QuestionCategory::get_all([
+            ['is_enable','=',1],
+            ['is_delete','=',0],
+            ['subject_ids','find in set',$this->subject_id]
+        ],"id,title as name","sort ASC");//题型
 
         //处理前端传递参数
         $data = request()->only(["type","level","grade","knowledge"]);
