@@ -40,13 +40,12 @@ class Teacher extends Base
             if(isset($item['subject_ids']))
             {
                 $item['subject_data'] = [];
+                $item['subject_ids'] = array_map(function($v){ return (int)$v; },explode(",",$item['subject_ids']));
 
-                foreach($subject_list as $subject)
+                foreach($item['subject_ids'] as $subject_id)
                 {
-                    if(strstr(','.$item['subject_ids'].',',(string)$subject['id']))
-                    {
-                        $item['subject_data'][] = $subject;
-                    }
+                    if(isset($subject_list[$subject_id]))
+                        $item['subject_data'][] = $subject_list[$subject_id];
                 }
             }
             if(isset($item['school_id']))

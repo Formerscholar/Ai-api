@@ -26,13 +26,12 @@ class Institution extends Base{
             if(isset($item['grade_ids']))
             {
                 $item['grade_data'] = [];
+                $item['grade_ids'] = array_map(function($v){ return (int)$v; },explode(",",$item['grade_ids']));
 
-                foreach($grade_list as $value)
+                foreach($item['grade_ids'] as $grade_id)
                 {
-                    if(strstr(','.$item['grade_ids'].',',(string)$value['id']))
-                    {
-                        $item['grade_data'][] = $value;
-                    }
+                    if(isset($grade_list[$grade_id]))
+                        $item['grade_data'][] = $grade_list[$grade_id];
                 }
             }
         }
