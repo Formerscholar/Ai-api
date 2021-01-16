@@ -24,17 +24,17 @@ class Menu extends Admin
     }
     //编辑保存
     public function save(){
-        $data = request()->post();
-        validate(\app\admin\validate\Teacher::class)->scene("edit")->check($data);
+        $post_data = request()->post();
+        validate(\app\admin\validate\Menu::class)->scene("edit")->check($post_data);
 
-        $user_model = \app\admin\model\Teacher::find($data['id']);
-        if(!$user_model)
-            return my_json([],-1,"老师数据不存在");
+        $menu_model = \app\admin\model\Menu::find($post_data['id']);
+        if(!$menu_model)
+            return my_json([],-1,"菜单数据不存在");
 
-        $data['update_time'] = time();
-        $user_model->save($data);
+        $post_data['update_time'] = time();
+        $menu_model->save($post_data);
 
-        return my_json([],0,"老师编辑保存成功");
+        return my_json([],0,"菜单编辑保存成功");
     }
     //添加
     public function add(){

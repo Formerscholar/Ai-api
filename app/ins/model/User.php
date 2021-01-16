@@ -52,6 +52,7 @@ class User extends Base
                             "route" =>  $m['route'],
                             "desc"  =>  $m['desc'],
                             "pid"   =>  $m['pid'],
+                            "icon"  =>  $m['icon'],
                         ];
                         $right_str .= ",".$m['rights'].",";
                     }
