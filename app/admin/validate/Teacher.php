@@ -20,7 +20,7 @@ class Teacher extends Validate{
         'point' =>  'number',
         'is_enable' =>  'in:0,1',
         'school_id' =>  'require|integer',
-        'subject_id' =>  'require|integer',
+        'subject_ids' =>  'require|array',
         'ins_id'    =>   'require|integer',
     ];
     protected $message  =   [

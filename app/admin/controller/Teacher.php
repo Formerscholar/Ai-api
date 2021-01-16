@@ -43,6 +43,8 @@ class Teacher extends Admin
         if(!$user_model)
             return my_json([],-1,"未找到老师数据");
 
+        $user_model['subject_ids'] = array_map(function($v){ return (int)$v; },explode(",",$user_model['subject_ids']));
+
         return my_json($user_model->getData());
     }
     //老师编辑保存
@@ -54,6 +56,7 @@ class Teacher extends Admin
         if(!$user_model)
             return my_json([],-1,"老师数据不存在");
 
+        $data['subject_ids'] = join(",",$data['subject_ids']);
         $data['update_time'] = time();
         $user_model->save($data);
 
@@ -64,6 +67,7 @@ class Teacher extends Admin
         $post_data = request()->post();
         validate(\app\admin\validate\Teacher::class)->scene("add")->check($post_data);
 
+        $post_data['subject_ids'] = join(",",$post_data['subject_ids']);
         $post_data['password'] = md5(config("my.default_password").config("my.password_secrect"));
         $post_data['salt'] = config("my.password_secrect");
         $post_data['add_time'] = time();
