@@ -9,6 +9,7 @@ use app\ins\model\Grade;
 use app\ins\model\Institution;
 use app\ins\model\Knowledge;
 use app\ins\model\QuestionCategory;
+use app\ins\model\Subject;
 use think\Request;
 
 //题目
@@ -20,6 +21,9 @@ class Question extends Admin
         $condition = [];
 
         $condition['level'] = config("my.question_level");//难度
+
+        $curr_subject_ids = explode(",",$this->subject_ids);
+        $condition['subject'] = Subject::whereIn("id",$curr_subject_ids)->select()->toArray();
 
         $curr_grade_ids = Institution::where("id",$this->ins_id)->column("grade_ids");
         if(!empty($curr_grade_ids))
@@ -34,26 +38,41 @@ class Question extends Admin
         else
             $condition['grade'] = [];
 
-        $condition['type'] = QuestionCategory::get_all([
-            ['is_enable','=',1],
-            ['is_delete','=',0],
-            ['subject_ids','find in set',$this->subject_id]
-        ],"id,title as name","sort ASC");//题型
+        $where_subject = [];
+        foreach($curr_subject_ids as $subject_id)
+        {
+            $where_subject[] = "FIND_IN_SET(".$subject_id.",subject_ids)";
+        }
+
+        $question_category_list = QuestionCategory::where([
+            'is_enable' =>  1,
+            'is_delete' =>  0
+        ])->where(join(' OR ', $where_subject))->select();
+        //题型
+        if($question_category_list)
+            $condition['type'] = $question_category_list->toArray();
+        else
+            $condition['type'] = [];
 
         //处理前端传递参数
-        $data = request()->only(["type","level","grade","knowledge"]);
+        $data = request()->only(["subject","type","level","grade","knowledge"]);
         $page = input("get.page",1,"int");
         $limit = input("get.limit",10,"int");
 
         //todo 验证条件是否合法
 
         $where_know = [
-            ["subject_id","=",$this->subject_id]
+
         ];//知识点
         $where_question = [
-            ["subject_id","=",$this->subject_id]
-        ];//条目
 
+        ];//题目
+
+        if($data['subject'] && in_array($data['subject'],$curr_subject_ids))
+        {
+            $where_know[] = ["subject_id","=",$data['subject']];
+            $where_question[] = ["subject_id","=",$data['subject']];
+        }
         if($data['type'])
         {
             $where_question[] = ["type",'=',$data['type']];

@@ -20,7 +20,7 @@ class User extends Validate{
         'point' =>  'number',
         'is_enable' =>  'in:0,1',
         'school_id' =>  'require|integer',
-        'subject_id' =>  'require|integer',
+        'subject_ids' =>  'require|array',
     ];
     protected $message  =   [
         'account.require' => '手机号必填',

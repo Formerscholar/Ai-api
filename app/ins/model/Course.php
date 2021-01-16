@@ -41,13 +41,12 @@ class Course extends Base{
             if(isset($item['school_ids']))
             {
                 $item['school_data'] = [];
+                $item['school_ids'] = array_map(function($v){ return (int)$v; },explode(",",$item['school_ids']));
 
-                foreach($school_list as $value)
+                foreach($item['school_ids'] as $school_id)
                 {
-                    if(strstr(','.$item['school_ids'].',',(string)$value['id']))
-                    {
-                        $item['school_data'][] = $value;
-                    }
+                    if(isset($school_list[$school_id]))
+                        $item['school_data'][] = $school_list[$school_id];
                 }
             }
             if(isset($item['subject_id']))

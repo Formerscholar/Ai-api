@@ -31,7 +31,7 @@ class Teacher extends Admin{
         if($subject_id)
             $where[] = ['subject_id','=',$subject_id];
 
-        $list = User::get_page($where,"*","add_time DESC",$page,$limit);
+        $list = User::get_page($where,"*","id DESC",$page,$limit);
         $list['list'] = User::format_list($list['list']);
         foreach($list['list'] as $key => $val)
         {
@@ -58,6 +58,7 @@ class Teacher extends Admin{
         if(!$user_model)
             return my_json([],-1,"老师数据不存在");
 
+        $data['subject_ids'] = join(",",$data['subject_ids']);
         $data['update_time'] = time();
         if(isset($data['password']) && $data['password'])
             $data['password'] = md5($data['password'].$user_model['salt']);
@@ -69,8 +70,9 @@ class Teacher extends Admin{
     //老师添加
     public function add(){
         $post_data = request()->except(["id"]);
-
         validate(\app\ins\validate\User::class)->scene("add")->check($post_data);
+
+        $post_data['subject_ids'] = join(",",$post_data['subject_ids']);
         $post_data['password'] = md5(config("my.default_password").config("my.password_secrect"));
         $post_data['salt'] = config("my.password_secrect");
 

@@ -87,10 +87,10 @@ class User extends Base
     }
 
     public static function format_list(Array $list = []){
-        $subject_ids = fetch_array_value($list,'subject_id');
+        $subject_ids = fetch_array_value($list,'subject_ids');
         $school_ids = fetch_array_value($list,'school_id');
 
-        $subject_list = Subject::get_all(["id" => $subject_ids],"id,name,title,icon1,icon2");
+        $subject_list = Subject::get_all(["id" => array_filter(array_unique(explode(",",join(",",$subject_ids))))],"id,name,title,icon1,icon2");
         if($subject_list)
             $subject_list = array_column($subject_list,null,"id");
 
@@ -100,8 +100,17 @@ class User extends Base
 
         foreach($list as &$item)
         {
-            if(isset($item['subject_id']))
-                $item['subject_data'] = isset($subject_list[$item['subject_id']]) ? $subject_list[$item['subject_id']] : [];
+            if(isset($item['subject_ids']))
+            {
+                $item['subject_data'] = [];
+                $item['subject_ids'] = array_map(function($v){ return (int)$v; },explode(",",$item['subject_ids']));
+
+                foreach($item['subject_ids'] as $subject_id)
+                {
+                    if(isset($subject_list[$subject_id]))
+                        $item['subject_data'][] = $subject_list[$subject_id];
+                }
+            }
             if(isset($item['school_id']))
                 $item['school_data'] = isset($school_list[$item['school_id']]) ? $school_list[$item['school_id']] : [];
         }

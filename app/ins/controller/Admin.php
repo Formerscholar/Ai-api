@@ -43,7 +43,7 @@ class Admin extends BaseController{
         }
         $this->uid = $user['id'];
         $this->ins_id = $user['ins_id'];
-        $this->subject_id = $user['subject_id'];
+        $this->subject_ids = $user['subject_ids'];
         $this->route = "{$app}/{$controller}/{$action}";
 
         //判断如果是非公共接口，则进入鉴权流程
