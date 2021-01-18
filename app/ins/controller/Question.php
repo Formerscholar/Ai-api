@@ -17,62 +17,72 @@ class Question extends Admin
 {
     //题目列表
     public function index(){
-        //查询条件
-        $condition = [];
-
-        $condition['level'] = config("my.question_level");//难度
-
-        $curr_subject_ids = explode(",",$this->subject_ids);
-        $condition['subject'] = Subject::whereIn("id",$curr_subject_ids)->select()->toArray();
-
-        $curr_grade_ids = Institution::where("id",$this->ins_id)->column("grade_ids");
-        if(!empty($curr_grade_ids))
-        {
-            $curr_grade_ids = explode(",",current($curr_grade_ids));
-            $condition['grade'] = Grade::get_all([
-                ['is_enable','=',1],
-                ['is_delete','=',0],
-                ["id","in",$curr_grade_ids]
-            ],"id,name","sort ASC");//年级
-        }
-        else
-            $condition['grade'] = [];
-
-        $where_subject = [];
-        foreach($curr_subject_ids as $subject_id)
-        {
-            $where_subject[] = "FIND_IN_SET(".$subject_id.",subject_ids)";
-        }
-
-        $question_category_list = QuestionCategory::where([
-            'is_enable' =>  1,
-            'is_delete' =>  0
-        ])->where(join(' OR ', $where_subject))->select();
-        //题型
-        if($question_category_list)
-            $condition['type'] = $question_category_list->toArray();
-        else
-            $condition['type'] = [];
-
-        //处理前端传递参数
+        //过滤前端传递参数
         $data = request()->only(["subject","type","level","grade","knowledge"]);
         $page = input("get.page",1,"int");
         $limit = input("get.limit",10,"int");
 
-        //todo 验证条件是否合法
+        //验证搜索条件是否合法
+        $curr_subject_ids = explode(",",$this->subject_ids);
+        if(empty($curr_subject_ids))
+            return my_json([],-1,"未设置老师科目信息");
 
-        $where_know = [
+        if(!in_array($data['subject'],$curr_subject_ids))
+            return my_json([],-1,"科目不存在");
 
-        ];//知识点
+        if($data['type'])
+        {
+            $question_category_model = QuestionCategory::where([
+                ["is_enable","=",1],
+                ["is_delete","=",0],
+                ["id","=",$data['type']]
+            ])->find();
+            if(!$question_category_model)
+                return my_json([],-1,"题目类型不存在");
+        }
+
+        if($data['level'])
+        {
+            $level_list = config("my.question_level");
+            $level_find = false;
+            foreach($level_list as $l)
+            {
+                if($l['id'] == $data['level'])
+                {
+                    $level_find = true;
+                    break;
+                }
+            }
+            if(!$level_find)
+                return my_json([],-1,"难度值不存在");
+        }
+
+
+        $curr_grade_ids = current(Institution::where("id",$this->ins_id)->column("grade_ids"));
+        if(empty($curr_grade_ids))
+            return my_json([],-1,"未设置机构开通班级");
+
+        $curr_grade_ids = explode(",",$curr_grade_ids);
+        if($data['grade'])
+        {
+            if(!is_array($data['grade']))
+                return my_json([],-1,"年级必须是数组");
+
+            $data['grade'] = array_values(array_intersect($data['grade'],$curr_grade_ids));
+        }
+
+        if(empty($data['knowledge']) || !is_array($data['knowledge']))
+        {
+            $data['knowledge'] = [];
+        }
+
+        //搜索条件验证完毕
+
+        //查询
         $where_question = [
-
+            ["subject_id","=",$data['subject']]
         ];//题目
 
-        if($data['subject'] && in_array($data['subject'],$curr_subject_ids))
-        {
-            $where_know[] = ["subject_id","=",$data['subject']];
-            $where_question[] = ["subject_id","=",$data['subject']];
-        }
         if($data['type'])
         {
             $where_question[] = ["type",'=',$data['type']];
@@ -82,29 +92,20 @@ class Question extends Admin
             $where_question[] = ['level','=',$data['level']];
         }
         //grade、knowledge 均为数组格式
-        if($data['grade'] && is_array($data['grade']) && !in_array(0,$data['grade']))
-        {
-            $tmp2 = [];
-            foreach($data['grade'] as $v)
-                $tmp2[] = "FIND_IN_SET({$v},grade_id)";
+        if($data['grade'])
             $where_question[] = ['grade_id','in',$data['grade']];
-        }
         else
+            $where_question[] = ['grade_id','in',$curr_grade_ids];
+
+        $where_knowledge = [];
+        if($data['knowledge'])
         {
-            $tmp2 = [];
-            foreach($condition['grade'] as $v)
-                $tmp2[] = "FIND_IN_SET({$v['id']},grade_id)";
-            $where_question[] = ['grade_id','in',array_column($condition['grade'],"id")];
-        }
-        if($data['knowledge'] && is_array($data['knowledge']))
-        {
-            $tmp = [];
             foreach($data['knowledge'] as $v)
-                $tmp[] = "FIND_IN_SET({$v},know_point)";
+                $where_knowledge[] = "FIND_IN_SET({$v},know_point)";
         }
-        $query = \app\ins\model\Question::where($where_question);
-        if(isset($tmp))
-            $query->where('('.join(' OR ', $tmp).')');
+
+
+        $query = \app\ins\model\Question::where($where_question)->where(join(' OR ', $where_knowledge));
         $question_page = [];
         $question_page['count'] = $query->count();
         $question_page['total_page'] = ceil($question_page['count']/$limit);
@@ -141,16 +142,87 @@ class Question extends Admin
                 }
             }
         }
+        return my_json($question_page);
+    }
+    //获得题目列表的搜索条件
+    public function getSearchCondition(){
+        //查询条件
+        $condition = [];
 
-        $query2 = Knowledge::where($where_know);
-        if(isset($tmp2))
-            $query2->where('('.join(' OR ', $tmp2).')');
-        $knowledge_list = $query2->field('id,name,code,title,pid')->order('sort','asc')->select()->toArray();
-        return my_json([
-            "condition" =>  $condition,
-            "question"  =>  $question_page,
-            "knowledge" =>  $knowledge_list,
-        ]);
+        $condition['level'] = config("my.question_level");//难度
+
+        $curr_subject_ids = explode(",",$this->subject_ids);
+        $condition['subject'] = Subject::whereIn("id",$curr_subject_ids)->field("id,title")->orderRaw("field(id,".join(",",$curr_subject_ids).")")->select()->toArray();
+        if(empty($curr_subject_ids))
+            return my_json([],-1,"未设置老师科目信息");
+        $default_subject_id = current($curr_subject_ids);
+
+        $curr_grade_ids = current(Institution::where("id",$this->ins_id)->column("grade_ids"));
+        if(empty($curr_grade_ids))
+            return my_json([],-1,"未设置机构开通班级");
+
+        $curr_grade_ids = explode(",",$curr_grade_ids);
+        $condition['grade'] = Grade::get_all([
+            ['is_enable','=',1],
+            ['is_delete','=',0],
+            ["id","in",$curr_grade_ids],
+        ],"id,name","sort ASC");//年级
+
+        $question_category_list = QuestionCategory::where([
+            ["is_enable","=",1],
+            ["is_delete","=",0],
+            ["subject_ids","find in set",$default_subject_id]
+        ])->field("id,title")->select();
+        //题型
+        if($question_category_list)
+            $condition['type'] = $question_category_list->toArray();
+        else
+            $condition['type'] = [];
+
+        //知识点
+        $where_grade = [];
+        foreach($curr_grade_ids as $v)
+            array_push($where_grade,"FIND_IN_SET({$v},grade_id)");
+
+        $knowledge_model = Knowledge::where("subject_id",$default_subject_id)->where(join(' OR ', $where_grade))->field('id,name,code,title,pid')->order('sort','asc')->select();
+        if($knowledge_model)
+            $condition['knowledge'] = $knowledge_model->toArray();
+        else
+            $condition['knowledge'] = [];
+
+        return my_json($condition);
+    }
+    //通过年级获得知识点列表
+    public function getKnowledgeByGradIds(){
+        $subject_id = input("get.subject_id",0,"int");
+        $grade_ids = input("get.grade_ids");
+
+        $where_know = [
+            ["subject_id","=",$subject_id]
+        ];//知识点
+
+        $curr_grade_ids = current(Institution::where("id",$this->ins_id)->column("grade_ids"));
+        if(empty($curr_grade_ids))
+            return my_json([],-1,"未设置机构开通班级");
+
+        $curr_grade_ids = explode(",",$curr_grade_ids);
+
+        if(empty($grade_ids) || !is_array($grade_ids))
+            $grade_ids = $curr_grade_ids;
+
+        $grade_ids = array_values(array_intersect($grade_ids,$curr_grade_ids));
+        $where_grade = [];
+        if($grade_ids && is_array($grade_ids))
+        {
+            foreach($grade_ids as $v)
+                $where_grade[] = "FIND_IN_SET({$v},grade_id)";
+        }
+
+        $knowledge_model = Knowledge::where($where_know)->where(join(' OR ', $where_grade))->field('id,name,code,title,pid')->order('sort','asc')->select();
+        if(!$knowledge_model)
+            return my_json([]);
+
+        return my_json($knowledge_model->toArray());
     }
     //获得题目答案
     public function getAnswer(){
