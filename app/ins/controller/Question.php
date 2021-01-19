@@ -221,7 +221,7 @@ class Question extends Admin
         $knowledge_model = Knowledge::where($where_know)->where(join(' OR ', $where_grade))->field('id,name,code,title,pid')->order('sort','asc')->select();
         if(!$knowledge_model)
             return my_json([]);
-
+//        echo Knowledge::getLastsql();exit;
         return my_json($knowledge_model->toArray());
     }
     //获得题目答案
@@ -233,7 +233,7 @@ class Question extends Admin
             return my_json([],-1,"题目数据不存在");
 
         $data = $model->getData();
-        $know_point_arr = explode(",",trim($data['know_point'],","));
+        $know_point_arr = $data['know_point']? explode(",",trim($data['know_point'],",")) : [];
         if(empty($know_point_arr))
             $data['know_point_names'] = "";
         else
