@@ -192,38 +192,6 @@ class Question extends Admin
 
         return my_json($condition);
     }
-    //通过年级获得知识点列表
-    public function getKnowledgeByGradIds(){
-        $subject_id = input("get.subject_id",0,"int");
-        $grade_ids = input("get.grade_ids");
-
-        $where_know = [
-            ["subject_id","=",$subject_id]
-        ];//知识点
-
-        $curr_grade_ids = current(Institution::where("id",$this->ins_id)->column("grade_ids"));
-        if(empty($curr_grade_ids))
-            return my_json([],-1,"未设置机构开通班级");
-
-        $curr_grade_ids = explode(",",$curr_grade_ids);
-
-        if(empty($grade_ids) || !is_array($grade_ids))
-            $grade_ids = $curr_grade_ids;
-
-        $grade_ids = array_values(array_intersect($grade_ids,$curr_grade_ids));
-        $where_grade = [];
-        if($grade_ids && is_array($grade_ids))
-        {
-            foreach($grade_ids as $v)
-                $where_grade[] = "FIND_IN_SET({$v},grade_id)";
-        }
-
-        $knowledge_model = Knowledge::where($where_know)->where(join(' OR ', $where_grade))->field('id,name,code,title,pid')->order('sort','asc')->select();
-        if(!$knowledge_model)
-            return my_json([]);
-//        echo Knowledge::getLastsql();exit;
-        return my_json($knowledge_model->toArray());
-    }
     //获得题目答案
     public function getAnswer(){
         $id = input("get.id");

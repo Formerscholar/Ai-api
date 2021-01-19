@@ -48,7 +48,7 @@ class Login extends BaseController
             "unionid" =>  $user_model['unionid'],
             "avatar" =>  $user_model['avatar'],
             "school_id" =>  $user_model['school_id'],
-            "subject_id"    =>  $user_model['subject_id'],
+            "subject_ids"    =>  $user_model['subject_ids'],
         ];
         $subject_model = Subject::find($user_model['subject_id']);
         if($subject_model)

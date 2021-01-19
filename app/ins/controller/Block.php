@@ -12,6 +12,8 @@ namespace app\ins\controller;
 use app\ins\model\Area;
 use app\ins\model\Course;
 use app\ins\model\Grade;
+use app\ins\model\Institution;
+use app\ins\model\Knowledge;
 use app\ins\model\Paper;
 use app\ins\model\PaperQuestion;
 use app\ins\model\Question;
@@ -25,6 +27,50 @@ use app\ins\model\User;
 use think\facade\Filesystem;
 
 class Block extends Admin{
+    //通过年级获得知识点列表
+    public function getKnowledgeByGradIds(){
+        $subject_id = input("get.subject_id",0,"int");
+        $grade_ids = input("get.grade_ids");
+
+        $where_know = [
+            ["subject_id","=",$subject_id]
+        ];//知识点
+
+        $curr_grade_ids = current(Institution::where("id",$this->ins_id)->column("grade_ids"));
+        if(empty($curr_grade_ids))
+            return my_json([],-1,"未设置机构开通班级");
+
+        $curr_grade_ids = explode(",",$curr_grade_ids);
+
+        if(empty($grade_ids) || !is_array($grade_ids))
+            $grade_ids = $curr_grade_ids;
+
+        $grade_ids = array_values(array_intersect($grade_ids,$curr_grade_ids));
+        $where_grade = [];
+        if($grade_ids && is_array($grade_ids))
+        {
+            foreach($grade_ids as $v)
+                $where_grade[] = "FIND_IN_SET({$v},grade_id)";
+        }
+
+        $knowledge_model = Knowledge::where($where_know)->where(join(' OR ', $where_grade))->field('id,name,code,title,pid')->order('sort','asc')->select();
+        if(!$knowledge_model)
+            return my_json([]);
+//        echo Knowledge::getLastsql();exit;
+        return my_json($knowledge_model->toArray());
+    }
+    //通过科目获得题型列表
+    public function getTypeBySubjectId(){
+        $subject_id = input("get.subject_id");
+
+        $question_category_list = QuestionCategory::where([
+            ["is_enable","=",1],
+            ["is_delete","=",0],
+            ["subject_ids","find in set",$subject_id]
+        ])->field("id,title")->select();
+
+        return my_json($question_category_list->toArray());
+    }
     //获得学生的错题列表
     public function getStudentQuestionList(){
         $id = request()->get("id",0,"int");
