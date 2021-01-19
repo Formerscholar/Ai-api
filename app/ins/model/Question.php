@@ -14,8 +14,8 @@ class Question extends Base{
     protected $connection = "aictb";
     protected $name = 'exercises';
 
-    public static function get_rand_list($type,$limit = 1){
-        $result = Db::connect("aictb")->query("SELECT * FROM `z_exercises` WHERE id >= (SELECT floor(RAND() * (SELECT MAX(id) FROM `z_exercises`))) AND type=? ORDER BY id LIMIT ?;",[$type,$limit]);
+    public static function get_rand_list($subject_id,$type,$limit = 1){
+        $result = Db::connect("aictb")->query("SELECT * FROM `z_exercises` WHERE id >= (SELECT floor(RAND() * (SELECT MAX(id) FROM `z_exercises`))) AND subject_id = ? AND type=? ORDER BY id LIMIT ?;",[$subject_id,$type,$limit]);
         return $result;
     }
 }

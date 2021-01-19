@@ -258,7 +258,7 @@ class Question extends Admin
             }
         }
 
-        $re['about'] = \app\ins\model\Question::get_rand_list($model['type'],$count);
+        $re['about'] = \app\ins\model\Question::get_rand_list($this->subject_id,$model['type'],$count);
         //题型
         $question_types = array_column($re['about'],"type");
         $question_type_list = QuestionCategory::where("id","in",$question_types)->field("id,title")->select()->toArray();
