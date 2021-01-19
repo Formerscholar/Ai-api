@@ -19,7 +19,7 @@ use app\ins\model\QuestionOption;
 class Basket extends Admin{
     //组卷栏信息
     public function detail(){
-        $basket_model = \app\ins\model\Basket::where(["uid" =>  $this->uid])->fieldRaw("type,count(*) as c")->group('type')->select();
+        $basket_model = \app\ins\model\Basket::where(["uid" =>  $this->uid,"subject_id" =>  $this->subject_id])->fieldRaw("type,count(*) as c")->group('type')->select();
 
         $type_ids = array_column($basket_model->toArray(),"type");
         $type_list = QuestionCategory::get_all(["id" => $type_ids],"id,title");
@@ -92,7 +92,7 @@ class Basket extends Admin{
             $re['paper_config'] = Paper::find($paper_id);
         }
 
-        $basket_model = \app\ins\model\Basket::where(["uid"   =>  $this->uid])->fieldRaw("type,count(*) as count")->group('type')->select();
+        $basket_model = \app\ins\model\Basket::where(["uid"   =>  $this->uid,"subject_id"   =>  $this->subject_id])->fieldRaw("type,count(*) as count")->group('type')->select();
 
         $type_list = QuestionCategory::get_all(["id" => array_column($basket_model->toArray(),"type")],"id,title");
         if($type_list)
@@ -100,7 +100,7 @@ class Basket extends Admin{
 
         $paper = [];
         $paper['detail'] = [];
-        $paper['score'] = \app\ins\model\Basket::where(["uid"   =>  $this->uid])->sum("score");//总分值
+        $paper['score'] = \app\ins\model\Basket::where(["uid"   =>  $this->uid,"subject_id"   =>  $this->subject_id])->sum("score");//总分值
         $paper['question_count'] = \app\ins\model\Basket::where(["uid"   =>  $this->uid])->count();;//总题数
         $total_level = 0;//总难度
 
@@ -112,11 +112,11 @@ class Basket extends Admin{
 
             if(in_array($type_data['type'],$order_by['type']))
             {
-                $question_reuslt = \app\ins\model\Basket::where(["uid" =>  $this->uid,"type"  =>  $type_data['type']])->field("question_id,score,sort")->order($order_by['sort'])->select();
+                $question_reuslt = \app\ins\model\Basket::where(["uid" =>  $this->uid,"subject_id"   =>  $this->subject_id,"type"  =>  $type_data['type']])->field("question_id,score,sort")->order($order_by['sort'])->select();
             }
             else
             {
-                $question_reuslt = \app\ins\model\Basket::where(["uid" =>  $this->uid,"type"  =>  $type_data['type']])->field("question_id,score,sort")->order($order_by['sort'])->select();
+                $question_reuslt = \app\ins\model\Basket::where(["uid" =>  $this->uid,"subject_id"   =>  $this->subject_id,"type"  =>  $type_data['type']])->field("question_id,score,sort")->order($order_by['sort'])->select();
             }
             $question_id_arr = array_column($question_reuslt->toArray(),"question_id");
             $question_model = Question::where("id","in",$question_id_arr)->orderRaw("field(id,".join(",",$question_id_arr).")")->select();
@@ -129,7 +129,7 @@ class Basket extends Admin{
             $total_level += array_sum(array_column($question_model->toArray(),"level"));
 
             $paper['detail'][] = array_merge($type_data,["quesiton_ids" => $question_id_arr]);
-            $question[] = array_merge($type_data,["score" =>  \app\ins\model\Basket::where(["uid"   =>  $this->uid,"type" =>  $type_data['type']])->sum("score"),"question_list" => $question_model->toArray()]);
+            $question[] = array_merge($type_data,["score" =>  \app\ins\model\Basket::where(["uid"   =>  $this->uid,"subject_id"   =>  $this->subject_id,"type" =>  $type_data['type']])->sum("score"),"question_list" => $question_model->toArray()]);
         }
         if($paper['question_count'])
             $paper['level'] = ceil($total_level / $paper['question_count']);
@@ -146,7 +146,8 @@ class Basket extends Admin{
         $id = input("get.id",0,"int");
 
         if(\app\ins\model\Basket::where([
-                "uid"   =>  $this->uid
+                "uid"   =>  $this->uid,
+                "subject_id"   =>  $this->subject_id
             ])->count() >= config("my.basket_max_question"))
             return my_json([],-1,"一份试卷最多".config("my.basket_max_question")."道试题，请重新加载组卷篮");
 
@@ -156,6 +157,7 @@ class Basket extends Admin{
 
         if(\app\ins\model\Basket::where([
                 "uid"   =>  $this->uid,
+                "subject_id"   =>  $this->subject_id,
                 "question_id"   =>  $id
             ])->count() > 0)
             return my_json([],-1,"组卷栏中已经存在该题目");
@@ -166,6 +168,7 @@ class Basket extends Admin{
 
         $model = \app\ins\model\Basket::create([
             "uid"   =>  $this->uid,
+            "subject_id"   =>  $this->subject_id,
             "question_id"   =>  $id,
             "type"  =>  $question_model['type'],
             "level" =>  $question_model['level'],
@@ -185,7 +188,8 @@ class Basket extends Admin{
 
 
         if((\app\ins\model\Basket::where([
-                "uid"   =>  $this->uid
+                "uid"   =>  $this->uid,
+                "subject_id"   =>  $this->subject_id
             ])->count() + count($id_arr)) >= config("my.basket_max_question"))
             return my_json([],-1,"一份试卷最多".config("my.basket_max_question")."道试题，请重新加载组卷篮");
 
@@ -203,12 +207,14 @@ class Basket extends Admin{
 
             if(\app\ins\model\Basket::where([
                     "uid"   =>  $this->uid,
+                    "subject_id"   =>  $this->subject_id,
                     "question_id"   =>  $id
                 ])->count() > 0)
                 continue;
 
             $add_data[] = [
                 "uid"   =>  $this->uid,
+                "subject_id"   =>  $this->subject_id,
                 "question_id"   =>  $id,
                 "type"  =>  $question_model['type'],
                 "level" =>  $question_model['level'],
@@ -239,6 +245,7 @@ class Basket extends Admin{
 
         $basket_model = \app\ins\model\Basket::where([
             "uid"   =>  $this->uid,
+            "subject_id"   =>  $this->subject_id,
             "question_id"   =>  $id
         ])->find();
         if(!$basket_model)
@@ -254,6 +261,7 @@ class Basket extends Admin{
 
         $basket_model = \app\ins\model\Basket::where([
             "uid"   =>  $this->uid,
+            "subject_id"   =>  $this->subject_id,
             "type"   =>  $type
         ])->select();
         if(!$basket_model)
@@ -267,6 +275,7 @@ class Basket extends Admin{
     public function deleteAll(){
         $basket_model = \app\ins\model\Basket::where([
             "uid"   =>  $this->uid,
+            "subject_id"   =>  $this->subject_id,
         ])->select();
         if(!$basket_model)
             return my_json([],-1,"未找到数据");
@@ -287,6 +296,7 @@ class Basket extends Admin{
 
         $current_where = [
             "uid"    =>  $this->uid,
+            "subject_id"   =>  $this->subject_id,
             "type"   =>  $type,
             "question_id" => $id
         ];
@@ -301,13 +311,14 @@ class Basket extends Admin{
             case "up":
                 $min_sort = \app\ins\model\Basket::where([
                     "uid"   =>  $this->uid,
+                    "subject_id"   =>  $this->subject_id,
                     "type"  =>  $type
                 ])->min("sort");
                 if($current_sort == $min_sort)
                     return my_json([],-1,"已是第一题");
                 else
                 {
-                    $preData = \app\ins\model\Basket::preData($current_where['uid'],$current_where['type'],$current_sort);
+                    $preData = \app\ins\model\Basket::preData($current_where['uid'],$current_where['subject_id'],$current_where['type'],$current_sort);
                     $else_where = [
                         "uid"    =>  $current_where['uid'],
                         "type"  =>  $current_where['type'],
@@ -326,6 +337,7 @@ class Basket extends Admin{
             case "down":
                 $max_sort = \app\ins\model\Basket::where([
                     "uid"   =>  $this->uid,
+                    "subject_id"   =>  $this->subject_id,
                     "type"  =>  $type
                 ])->max("sort");
 
@@ -333,7 +345,7 @@ class Basket extends Admin{
                     return my_json([],-1,"已是最后一题");
                 else
                 {
-                    $nextData = \app\ins\model\Basket::nextData($current_where['uid'],$current_where['type'],$current_sort);
+                    $nextData = \app\ins\model\Basket::nextData($current_where['uid'],$current_where['subject_id'],$current_where['type'],$current_sort);
                     $else_where = [
                         "uid"    =>  $current_where['uid'],
                         "type"  =>  $current_where['type'],
@@ -359,6 +371,7 @@ class Basket extends Admin{
 
         $basket_model = \app\ins\model\Basket::where([
             "uid"   =>  $this->uid,
+            "subject_id"   =>  $this->subject_id,
             "question_id"   =>  $id
         ])->find();
         if(!$basket_model)

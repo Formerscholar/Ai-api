@@ -10,6 +10,7 @@ use app\ins\model\PaperQuestion;
 use app\ins\model\Question;
 use app\ins\model\QuestionCategory;
 use app\ins\model\QuestionOption;
+use app\ins\model\User;
 use PhpOffice\PhpWord\PhpWord;
 use PhpOffice\PhpWord\SimpleType\JcTable;
 use PhpOffice\PhpWord\Style\TablePosition;
@@ -43,6 +44,12 @@ class Paper extends Admin
         if(!$paper_row)
             return my_json([],-1,"未找到试卷数据");
 
+        if($paper_row['subject_id'] != $this->subject_id)
+        {
+            $this->subject_id = $paper_row['subject_id'];
+            User::update(["current_subject_id" => $paper_row['subject_id']],["id"  =>  $this->uid]);
+        }
+
         $local_question_list = PaperQuestion::where("paper_id",$paper_id)->where("parent_id",2)->order('sort','asc')->field("question_id,score,sort")->select()->toArray();
         $question_ids = array_column($local_question_list,"question_id");
         $server_question_list = Question::where("id","in",$question_ids)->orderRaw("field(id,".join(",",$question_ids).")")->select()->toArray();
@@ -56,6 +63,7 @@ class Paper extends Admin
         foreach ($local_question_list as $key => $val){
             $basketData[$key] = array(
                 'uid'=>$this->uid,
+                'subject_id'    =>  $paper_row['subject_id'],
                 'question_id'=>$val['question_id'],
                 'type'=>isset($val['question_data']) ? $val['question_data']['type']:'',
                 'level' =>  isset($val['question_data']) ? $val['question_data']['level']:'',
@@ -195,7 +203,7 @@ class Paper extends Admin
             $paper_question_model = new PaperQuestion();
             $paper_question_model->saveAll($insert_paper_question_data);
             //清空组卷栏
-            Basket::where(["uid"    =>  $this->uid])->delete();
+            Basket::where(["uid"    =>  $this->uid])->where("subject_id",$this->subject_id)->delete();
             // 提交事务
             \think\facade\Db::commit();
 

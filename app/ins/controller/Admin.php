@@ -26,6 +26,7 @@ class Admin extends BaseController{
         {
             if($user = $this->checkCookie())
             {
+                $this->uid = $user['id'];
                 $user_model = User::find($user['id']);
                 if($user_model)
                 {
@@ -41,9 +42,14 @@ class Admin extends BaseController{
                 throw new ValidateException("登录超时");
             }
         }
-        $this->uid = $user['id'];
-        $this->ins_id = $user['ins_id'];
-        $this->subject_ids = $user['subject_ids'];
+        else
+        {
+            $this->uid = $user['id'];
+            $user_model = User::find($user['id']);
+        }
+        $this->ins_id = $user_model['ins_id'];
+        $this->subject_ids = $user_model['subject_ids'];
+        $this->subject_id = $user_model['current_subject_id'];
         $this->route = "{$app}/{$controller}/{$action}";
 
         //判断如果是非公共接口，则进入鉴权流程

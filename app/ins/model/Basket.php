@@ -10,15 +10,16 @@ namespace app\ins\model;
 
 class Basket extends Base{
     //返回组卷栏中所有的题目ids
-    public static function getQuestionIds($uid){
-        return self::where("uid",$uid)->column("question_id");
+    public static function getQuestionIds($uid,$subject_id){
+        return self::where("uid",$uid)->where("subject_id",$subject_id)->column("question_id");
     }
     //排序算法,上一个
-    public static function preData($uid,$type,$pre_sort){
+    public static function preData($uid,$subject_id,$type,$pre_sort){
         $pre_sort--;
 
         $res = self::where([
             "uid"   =>  $uid,
+            "subject_id"    =>  $subject_id,
             "type"  =>  $type,
             "sort"  =>  $pre_sort
         ])->find();
@@ -33,11 +34,12 @@ class Basket extends Base{
         }
     }
     //排序算法,下一个
-    public static function nextData($uid,$type,$next_sort){
+    public static function nextData($uid,$subject_id,$type,$next_sort){
         $next_sort++;
 
         $res = self::where([
             "uid"   =>  $uid,
+            "subject_id"    =>  $subject_id,
             "type"  =>  $type,
             "sort"  =>  $next_sort
         ])->find();

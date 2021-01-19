@@ -10,6 +10,7 @@ use app\ins\model\Institution;
 use app\ins\model\Knowledge;
 use app\ins\model\QuestionCategory;
 use app\ins\model\Subject;
+use app\ins\model\User;
 use think\Request;
 
 //题目
@@ -29,6 +30,12 @@ class Question extends Admin
 
         if(!in_array($data['subject'],$curr_subject_ids))
             return my_json([],-1,"科目不存在");
+        //更新用户当前科目id
+        if($this->subject_id != $data['subject'])
+        {
+            $this->subject_id = $data['subject'];
+            User::update(["current_subject_id"  =>  $data['subject']],["id" =>  $this->uid]);
+        }
 
         if($data['type'])
         {
@@ -113,7 +120,7 @@ class Question extends Admin
         $question_page['list'] = $query->page($page)->limit($limit)->select()->toArray();
 
         //检测是否已经添加到组卷栏中
-        $basket_question_ids = Basket::getQuestionIds($this->uid);
+        $basket_question_ids = Basket::getQuestionIds($this->uid,$this->subject_id);
         //题型
         $question_types = array_column($question_page['list'],"type");
         $question_type_list = QuestionCategory::where("id","in",$question_types)->field("id,title")->select()->toArray();
@@ -133,12 +140,14 @@ class Question extends Admin
 
             $question_page['list'][$key]['type_name'] = isset($question_type_list[$val['type']])?$question_type_list[$val['type']]['title']:"";
 
-            $question_page['list'][$key]['know_point_names'] = "";
-            foreach($question_know_point_list as $p)
+            $question_page['list'][$key]['know_point_names'] = [];
+            if(!empty($val['know_point']))
             {
-                if(strstr(','.$val['know_point'].',',(string)$p['id']))
+                $know_point_ids = array_map(function($v){ return (int)$v; },explode(",",$val['know_point']));
+                foreach($know_point_ids as $id)
                 {
-                    $question_page['list'][$key]['know_point_names'] .= $p['title'];
+                    if(isset($question_know_point_list[$id]))
+                        $question_page['list'][$key]['know_point_names'][] = $question_know_point_list[$id]['title'];
                 }
             }
         }
@@ -225,7 +234,7 @@ class Question extends Admin
         $re['question'] = $model->getData();
 
         //检测是否已经添加到组卷栏中
-        $basket_question_ids = Basket::getQuestionIds($this->uid);
+        $basket_question_ids = Basket::getQuestionIds($this->uid,$this->subject_id);
         if(in_array($re['question']['id'],$basket_question_ids))
             $re['question']['has_add_basket'] = 1;
         else
