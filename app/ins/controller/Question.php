@@ -215,6 +215,7 @@ class Question extends Admin
     //获得题目详情
     public function getInfo(){
         $id = input("get.id");
+        $count = input("get.count",1,"int");
 
         $re = [
             "question" => [],
@@ -248,7 +249,7 @@ class Question extends Admin
             }
         }
 
-        $re['about'] = \app\ins\model\Question::get_rand_list($model['type'],1);
+        $re['about'] = \app\ins\model\Question::get_rand_list($model['type'],$count);
         //题型
         $question_types = array_column($re['about'],"type");
         $question_type_list = QuestionCategory::where("id","in",$question_types)->field("id,title")->select()->toArray();
