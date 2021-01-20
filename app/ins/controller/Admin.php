@@ -48,6 +48,7 @@ class Admin extends BaseController{
             $user_model = User::find($user['id']);
         }
         $this->ins_id = $user_model['ins_id'];
+        $this->school_id = $user_model['school_id'];
         $this->subject_ids = $user_model['subject_ids'];
         $this->subject_id = $user_model['current_subject_id'];
         $this->route = "{$app}/{$controller}/{$action}";

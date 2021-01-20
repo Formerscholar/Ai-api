@@ -28,7 +28,10 @@ class Study extends Admin{
         $keyword = input("get.keyword","");
         $start_time   = input("get.start_time");
         $end_time   = input("get.end_time");
-        $where = [];
+        $where = [
+            ["ins_id","=",$this->ins_id],
+            ["school_id","=",$this->school_id]
+        ];
 
         if($keyword)
             $where[] = ['student_name','like',"%{$keyword}%"];

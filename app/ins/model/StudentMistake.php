@@ -2,14 +2,12 @@
 /**
  * Created by PhpStorm.
  * User: 酸菜鱼
- * Date: 2020/12/23 0023
- * Time: 14:55
+ * Date: 2020/12/24 0024
+ * Time: 13:19
  */
 namespace app\ins\model;
 
-use think\Model;
 
-class Role extends Base
-{
+class StudentMistake extends Base{
 
 }

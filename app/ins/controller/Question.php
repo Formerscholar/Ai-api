@@ -164,7 +164,10 @@ class Question extends Admin
         $condition['subject'] = Subject::whereIn("id",$curr_subject_ids)->field("id,title")->orderRaw("field(id,".join(",",$curr_subject_ids).")")->select()->toArray();
         if(empty($curr_subject_ids))
             return my_json([],-1,"未设置老师科目信息");
-        $default_subject_id = current($curr_subject_ids);
+        $default_subject_id = $this->subject_id;
+        if(empty($default_subject_id))
+            $default_subject_id = current($curr_subject_ids);
+        $condition['default_subject_id'] = $default_subject_id;
 
         $curr_grade_ids = current(Institution::where("id",$this->ins_id)->column("grade_ids"));
         if(empty($curr_grade_ids))

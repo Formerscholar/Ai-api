@@ -18,8 +18,10 @@ use app\ins\model\Paper;
 use app\ins\model\PaperQuestion;
 use app\ins\model\Question;
 use app\ins\model\QuestionCategory;
+use app\ins\model\Role;
 use app\ins\model\School;
 use app\ins\model\Student;
+use app\ins\model\StudentMistake;
 use app\ins\model\StudentResult;
 use app\ins\model\Subject;
 use app\ins\model\Team;
@@ -27,6 +29,10 @@ use app\ins\model\User;
 use think\facade\Filesystem;
 
 class Block extends Admin{
+    //获得全部角色
+    public function getAllRole(){
+        return my_json(Role::get_all([],"id,name"));
+    }
     //通过年级获得知识点列表
     public function getKnowledgeByGradIds(){
         $subject_id = input("get.subject_id",0,"int");

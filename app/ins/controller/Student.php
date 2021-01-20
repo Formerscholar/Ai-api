@@ -9,7 +9,9 @@ namespace app\ins\controller;
 
 //学生管理
 use app\ins\model\Knowledge;
+use app\ins\model\Question;
 use app\ins\model\QuestionCategory;
+use app\ins\model\StudentMistake;
 use app\ins\model\StudentResult;
 use app\ins\model\StudentStudy;
 use app\ins\model\Subject;
@@ -25,11 +27,12 @@ class Student extends Admin{
         $limit = input("get.limit",10,"int");
         $keyword = input("get.keyword","");
         $team_id   = input("get.team_id",0,"int");
-        $school_id   = input("get.school_id",0,"int");
+//        $school_id   = input("get.school_id",0,"int");
         $start_time   = input("get.start_time");
         $end_time   = input("get.end_time");
 
         $where[] = ["ins_id","=",$this->ins_id];
+        $where[] = ["school_id","=",$this->school_id];
         $where[] = ['is_delete','=',0];
         if($keyword)
             $where[] = ['name|mobile','like',"%{$keyword}%"];
@@ -259,5 +262,35 @@ class Student extends Admin{
         }
 
         return my_json($re);
+    }
+    //将题目加入到学生错题集中
+    public function addMistake(){
+        $post_data = request()->only(["question_id","student_ids"]);
+
+        $question_model = Question::find($post_data['question_id']);
+        if(!$question_model)
+            return my_json([],-1,"未找到题目数据");
+
+        if(empty($post_data['student_ids']) || !is_array($post_data['student_ids']))
+            return my_json([],-1,"学生数据不能为空");
+
+        $student_mistake_model = StudentMistake::where("student_id","in",$post_data['student_ids'])->where("question_id",$post_data['question_id'])->select();
+        $filter_student_ids = array_diff($post_data['student_ids'],array_column($student_mistake_model->toArray(),"student_id"));
+
+        $insert_data = [];
+        foreach($filter_student_ids as $id)
+        {
+            $insert_data[] = [
+                "teacher_id"    =>  $this->uid,
+                "student_id"    =>  $id,
+                "question_id"   =>  $post_data['question_id'],
+                "add_time"      =>  time()
+            ];
+        }
+
+        $student_mistake_model = new StudentMistake();
+        $student_mistake_model->saveAll($insert_data);
+
+        return my_json([]);
     }
 }

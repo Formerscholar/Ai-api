@@ -61,7 +61,7 @@ class Student extends Base{
                 foreach($item['uids'] as $uid)
                 {
                     if(isset($user_list[$uid]))
-                        $item['school_data'][] = $user_list[$uid];
+                        $item['user_data'][] = $user_list[$uid];
                 }
             }
 
