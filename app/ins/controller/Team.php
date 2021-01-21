@@ -8,6 +8,7 @@
 namespace app\ins\controller;
 
 //班级管理
+use app\ins\model\Student;
 use app\ins\model\StudentResult;
 use app\ins\model\StudentStudy;
 use app\Request;
@@ -91,5 +92,29 @@ class Team extends Admin{
         $model->saveAll($batch_data);
 
         return my_json([],0,"删除班级成功");
+    }
+    //详情
+    public function detail(){
+        $id = input("get.id",0,"int");
+
+        $team_model = \app\ins\model\Team::find($id);
+        if(!$team_model)
+            return my_json([],-1,"未找到班级数据");
+
+        $re = current(\app\ins\model\Team::format_list([$team_model->getData()]));
+        return my_json($re);
+    }
+    //详情下学生列表
+    public function detailStudentList(){
+        $page = input("get.page",0,"int");
+        $limit = input("get.limit",10,"int");
+        $id = input("get.id",0,"int");
+
+        $where = [];
+        $where[] = ["team_ids","find in set",$id];
+        $student_list = Student::get_page($where,"*","id DESC",$page,$limit);
+        $student_list['list'] = Student::format_list($student_list['list']);
+
+        return my_json($student_list);
     }
 }

@@ -19,7 +19,7 @@ class Question extends Admin
     //题目列表
     public function index(){
         //过滤前端传递参数
-        $data = request()->only(["subject","type","level","grade","knowledge"]);
+        $data = request()->only(["subject","type","level","grade","knowledge","keyword"]);
         $page = input("get.page",1,"int");
         $limit = input("get.limit",10,"int");
 
@@ -64,6 +64,13 @@ class Question extends Admin
                 return my_json([],-1,"难度值不存在");
         }
 
+        if($data['keyword'])
+        {
+            if(strpos($data['keyword']," "))
+            {
+                $data['keyword'] = array_filter(explode(" ",$data['keyword']));
+            }
+        }
 
         $curr_grade_ids = current(Institution::where("id",$this->ins_id)->column("grade_ids"));
         if(empty($curr_grade_ids))
@@ -111,8 +118,20 @@ class Question extends Admin
                 $where_knowledge[] = "FIND_IN_SET({$v},know_point)";
         }
 
+        $where_keyword = [];
+        if($data['keyword'])
+        {
+            if(is_array($data['keyword']))
+            {
+                $where_keyword[] = ["content_text|content|content_all","like",$data['keyword'],'or'];
+            }
+            else
+            {
+                $where_keyword[] = ["content_text|content|content_all","like","%{$data['keyword']}%"];
+            }
+        }
 
-        $query = \app\ins\model\Question::where($where_question)->where(join(' OR ', $where_knowledge));
+        $query = \app\ins\model\Question::where($where_question)->where(join(' OR ', $where_knowledge))->where($where_keyword);
         $question_page = [];
         $question_page['count'] = $query->count();
         $question_page['total_page'] = ceil($question_page['count']/$limit);

@@ -16,8 +16,8 @@ class Student extends Validate{
         'sex' =>  'require|in:1,2',
         'mobile'  =>  'mobile',
         'school_id'  =>  'require|number',
-        'team_ids' =>  'require|array',
-        'uids'  =>  'require|array',
+        'team_ids' =>  'array',
+        'uids'  =>  'array',
     ];
     protected $message  =   [
         'name.require' => '姓名必填',

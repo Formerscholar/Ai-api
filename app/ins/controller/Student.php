@@ -27,12 +27,11 @@ class Student extends Admin{
         $limit = input("get.limit",10,"int");
         $keyword = input("get.keyword","");
         $team_id   = input("get.team_id",0,"int");
-//        $school_id   = input("get.school_id",0,"int");
+        $school_id   = input("get.school_id",0,"int");
         $start_time   = input("get.start_time");
         $end_time   = input("get.end_time");
 
         $where[] = ["ins_id","=",$this->ins_id];
-        $where[] = ["school_id","=",$this->school_id];
         $where[] = ['is_delete','=',0];
         if($keyword)
             $where[] = ['name|mobile','like',"%{$keyword}%"];
@@ -104,8 +103,8 @@ class Student extends Admin{
         $post_data = request()->except(["id"]);
         validate(\app\ins\validate\Student::class)->check($post_data);
 
-        $post_data['team_ids'] = join(",",$post_data['team_ids']);
-        $post_data['uids'] = join(",",$post_data['uids']);
+        $post_data['team_ids'] = !empty($post_data['team_ids']) ?join(",",$post_data['team_ids']) : '';
+        $post_data['uids'] = !empty($post_data['uids']) ?join(",",$post_data['uids']) : '';
         $post_data['ins_id'] = $this->ins_id;
         $post_data['add_time'] = time();
         $student_model = \app\ins\model\Student::create($post_data);

@@ -29,8 +29,11 @@ class Paper extends Admin
         $where[] = ["ins_id","=",$this->ins_id];
         $where[] = ["uid",'=',$this->uid];
         $keyword = input("get.keyword","");
+        $subject_id = input("get.subject_id",0,"int");
         if($keyword)
             $where[] = ['name','like',"%{$keyword}%"];
+        if($subject_id)
+            $where[] = ['subject_id','=',$subject_id];
 
         $list = \app\ins\model\Paper::get_page($where,"*","id DESC",$page,$limit);
         $list['list'] = \app\ins\model\Paper::format_list($list['list']);

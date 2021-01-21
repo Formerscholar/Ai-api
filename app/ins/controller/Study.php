@@ -30,7 +30,6 @@ class Study extends Admin{
         $end_time   = input("get.end_time");
         $where = [
             ["ins_id","=",$this->ins_id],
-            ["school_id","=",$this->school_id]
         ];
 
         if($keyword)
