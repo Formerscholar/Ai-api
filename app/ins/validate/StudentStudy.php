@@ -14,7 +14,7 @@ class StudentStudy extends Validate{
     protected $rule = [
         'school_id' =>  'require|integer',
         'course_id' =>  'require|integer',
-        'student_id'    =>  'require|integer',
+        'student_id'    =>  'require|array',
         'study_time'=>  'require',
         'content' =>  'require|max:1000',
         'paper_id'  =>  'integer',

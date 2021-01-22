@@ -67,8 +67,8 @@ class Study extends Admin{
         validate(\app\ins\validate\StudentStudy::class)->scene("add")->check($post_data);
 
         $student_id = request()->post("student_id",0,"int");
-        $student = Student::scope("ins_id")->find($student_id);
-        if(!$student)
+        $students = Student::scope("ins_id")->whereIn("id",$student_id)->column("id,name");
+        if(empty($students))
             return my_json([],-1,"未找到学生数据");
 
         $course_id = request()->post("course_id");
@@ -76,16 +76,36 @@ class Study extends Admin{
         if(!$course)
             return my_json([],-1,"未找到课程数据");
 
-        $course_buy = CourseBuy::scope("ins_id")->where("course_id",$course_id)->where("student_id",$student_id)->whereRaw("used_hour < buy_hour")->find();
+        $course_buy = CourseBuy::scope("ins_id")->where("course_id",$course_id)->whereIn("student_id",$student_id)->whereRaw("used_hour < buy_hour")->select();
         if(!$course_buy)
             return my_json([],-1,"未找到该学生的购买记录");
+        $buyed_student_list = array_column($course_buy->toArray(),null,"student_id");
+        $error = false;
+        $error_msg = "";
+        foreach($students as $key => $val)
+        {
+            if(isset($buyed_student_list[$val['id']]))
+            {
+                $students[$key]['course_buy_id'] = $buyed_student_list[$val['id']]['id'];
+            }
+            else
+            {
+                $error = true;
+                $error_msg = "未找到[{$val['name']}]的购买记录";
+                break;
+            }
+        }
+        if($error)
+        {
+            return my_json([],-1,$error_msg);
+        }
 
         $paper_id = request()->post("paper_id",0,"int");
+        $questions = request()->post("questions",[]);
         $paper = Paper::scope("ins_id")->find($paper_id);
         $insert_result_data = [];
         if($paper)
         {
-            $questions = request()->post("questions",[]);
             foreach($questions as $question)
             {
                 $insert_result_data[] = [
@@ -94,42 +114,67 @@ class Study extends Admin{
                     "subject_id"    =>  $question['subject_id'],
                     "question_type"    =>  $question['question_type'],
                     "question_know_point"    =>  $question['question_know_point'],
-                    "student_id"    =>  $student_id,
                     "add_time"  =>  time(),
                 ];
             }
         }
 
-        $insert_study_data = [
-            "ins_id"    =>  $this->ins_id,
-            "school_id" =>  $post_data['school_id'],
-            "course_id" =>  $course_id,
-            "student_id"    =>  $student_id,
-            "student_name"  =>  $student['name'],
-            "content"   =>  $post_data['content'],
-            "study_time"  =>  $post_data['study_time'],
-            "add_time"  =>  time(),
-            "paper_id"  =>  $paper_id,
-            "uid"   =>  $this->uid,
-            "mistake_count" =>  count($questions)
-        ];
+        $insert_study_data = [];
+        $insert_result_data_all = [];
+        foreach($students as $key => $val)
+        {
+            if(!empty($insert_result_data))
+            {
+                array_walk($insert_result_data,function(&$item,$key) use($val){$item['student_id'] = $val['id'];});
+                $insert_result_data_all = array_merge($insert_result_data_all,$insert_result_data);
+            }
+            $insert_study_data[] = [
+                "ins_id"    =>  $this->ins_id,
+                "school_id" =>  $post_data['school_id'],
+                "course_id" =>  $course_id,
+                "student_id"    =>  $val['id'],
+                "student_name"  =>  $val['name'],
+                "content"   =>  $post_data['content'],
+                "study_time"  =>  $post_data['study_time'],
+                "add_time"  =>  time(),
+                "paper_id"  =>  $paper_id,
+                "uid"   =>  $this->uid,
+                "mistake_count" =>  count($questions)
+            ];
+        }
 
         \think\facade\Db::startTrans();
         try {
-            //插入学习记录数据
-            $study_model = StudentStudy::create($insert_study_data);
-            foreach($insert_result_data as $key => $val)
+            //批量插入学习记录数据
+            $study_model = new StudentStudy();
+            $resutl = $study_model->saveAll($insert_study_data)->toArray();
+
+            foreach($resutl as $val)
             {
-                $insert_result_data[$key]['study_id'] = $study_model->id;
+                array_walk($insert_result_data_all,function(&$item,$key) use($val){
+                    if($val['student_id'] == $item['student_id'])
+                        $item['study_id'] = $val['id'];
+                });
             }
-            if(count($insert_result_data))
+
+            if(count($insert_result_data_all))
             {
                 //插入学习记录错题题目关系数据
                 $result_model = new StudentResult();
-                $result_model->saveAll($insert_result_data);
+                $result_model->saveAll($insert_result_data_all);
             }
             //更新学生课程课时
-            CourseBuy::update(["used_hour" => Db::raw('used_hour+1')],["id"  =>  $course_buy['id']]);
+            $course_buy_model = new CourseBuy();
+            $update_course_buy_data = [];
+            foreach($students as $key => $val)
+            {
+                $update_course_buy_data[] = [
+                    "id"    =>  $val['course_buy_id'],
+                    "used_hour" =>  Db::raw('used_hour+1')
+                ];
+            }
+
+            $course_buy_model->saveAll($update_course_buy_data);
             // 提交事务
             \think\facade\Db::commit();
 
