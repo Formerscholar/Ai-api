@@ -8,6 +8,7 @@
 namespace app\ins\controller;
 
 //学生管理
+use app\ins\model\CourseBuy;
 use app\ins\model\Knowledge;
 use app\ins\model\Question;
 use app\ins\model\QuestionCategory;
@@ -173,11 +174,31 @@ class Student extends Admin{
         $re = [];
         //基本信息
         $re['info'] = current(\app\ins\model\Student::format_list([$student->getData()]));
-        $re['info']['team_data'] = Team::where("uids",'find in set',$id)->field("id,name")->select()->toArray();
-        //上课记录
-        $re['study_list'] = StudentStudy::format_list(StudentStudy::where("student_id",$id)->select()->toArray()) ;
-
         return my_json($re);
+    }
+    //详情-上课记录
+    public function studyList(){
+        $page = input("get.page",1,"int");
+        $limit = input("get.limit",10,"int");
+        $id = input("get.id",0,"int");
+
+        $where[] = ["student_id","=",$id];
+        $list = StudentStudy::get_page($where,"*","id DESC",$page,$limit);
+        $list['list'] = StudentStudy::format_list($list['list']);
+
+        return my_json($list);
+    }
+    //详情-课程购买记录
+    public function buyList(){
+        $page = input("get.page",1,"int");
+        $limit = input("get.limit",10,"int");
+        $id = input("get.id",0,"int");
+
+        $where[] = ["student_id","=",$id];
+        $list = CourseBuy::get_page($where,"*","id DESC",$page,$limit);
+        $list['list'] = CourseBuy::format_list($list['list']);
+
+        return my_json($list);
     }
     //学情报告
     public function report(){
@@ -295,5 +316,16 @@ class Student extends Admin{
         $student_result_model->saveAll($insert_data);
 
         return my_json([]);
+    }
+    //将题目从学生错题集中移除
+    public function removeMistake(){
+        $post_data = request()->only(["question_id","student_id"]);
+
+        $student_result_model = StudentResult::where("student_id",$post_data['student_id'])->where("question_id",$post_data['question_id'])->find();
+        if(!$student_result_model)
+            return my_json([],-1,"未找到错题数据");
+
+        StudentResult::where("id",$student_result_model['id'])->delete();
+        return my_json();
     }
 }
