@@ -11,7 +11,6 @@ namespace app\ins\controller;
 use app\ins\model\Knowledge;
 use app\ins\model\Question;
 use app\ins\model\QuestionCategory;
-use app\ins\model\StudentMistake;
 use app\ins\model\StudentResult;
 use app\ins\model\StudentStudy;
 use app\ins\model\Subject;
@@ -273,22 +272,27 @@ class Student extends Admin{
         if(empty($post_data['student_ids']) || !is_array($post_data['student_ids']))
             return my_json([],-1,"学生数据不能为空");
 
-        $student_mistake_model = StudentMistake::where("student_id","in",$post_data['student_ids'])->where("question_id",$post_data['question_id'])->select();
+        $student_mistake_model = StudentResult::where("student_id","in",$post_data['student_ids'])->where("question_id",$post_data['question_id'])->select();
         $filter_student_ids = array_diff($post_data['student_ids'],array_column($student_mistake_model->toArray(),"student_id"));
 
         $insert_data = [];
         foreach($filter_student_ids as $id)
         {
             $insert_data[] = [
+                "study_id"  =>  0,
                 "teacher_id"    =>  $this->uid,
+                "paper_id"  =>  0,
                 "student_id"    =>  $id,
                 "question_id"   =>  $post_data['question_id'],
+                "subject_id"    =>  $question_model['subject_id'],
+                "question_type" =>  $question_model['type'],
+                "question_know_point"   =>  empty($question_model['know_point'])?"":$question_model['know_point'],
                 "add_time"      =>  time()
             ];
         }
 
-        $student_mistake_model = new StudentMistake();
-        $student_mistake_model->saveAll($insert_data);
+        $student_result_model = new StudentResult();
+        $student_result_model->saveAll($insert_data);
 
         return my_json([]);
     }

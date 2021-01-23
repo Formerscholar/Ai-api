@@ -21,7 +21,6 @@ use app\ins\model\QuestionCategory;
 use app\ins\model\Role;
 use app\ins\model\School;
 use app\ins\model\Student;
-use app\ins\model\StudentMistake;
 use app\ins\model\StudentResult;
 use app\ins\model\Subject;
 use app\ins\model\Team;
