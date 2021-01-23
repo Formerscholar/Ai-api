@@ -78,7 +78,7 @@ class Paper extends Admin
         }
         \think\facade\Db::startTrans();
         try {
-            Basket::where("uid",$this->uid)->delete();
+            Basket::where("uid",$this->uid)->where("subject_id",$this->subject_id)->delete();
             $basket_model = new Basket();
             $basket_model->saveAll($basketData);
 
@@ -141,7 +141,7 @@ class Paper extends Admin
             $paper_question_model = new PaperQuestion();
             $paper_question_model->saveAll($insert_paper_question_data);
             //清空组卷栏
-            Basket::where(["uid"    =>  $this->uid])->delete();
+            Basket::where("uid",$this->uid)->where("subject_id",$paper_row['subject_id'])->delete();
 
             // 提交事务
             \think\facade\Db::commit();
