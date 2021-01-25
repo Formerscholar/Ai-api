@@ -112,17 +112,18 @@ class Block extends Admin{
         $file = request()->file('image');
         if(empty($file))
             return my_json([],-1,"未检测到上传图片");
+
         $result = validate([
             'file'  =>  ['fileSize:102400,fileExt:gif,jpg,png']
         ])->check(["file"   =>  $file]);
         if($result)
         {
             //上传到服务器,
-            $path = Filesystem::disk('public')->putFile('upload',$file);
+            $path = Filesystem::disk('public_html')->putFile('upload',$file);
             //结果是 $path = upload/20200825\***.jpg
 
             //图片路径，Filesystem::getDiskConfig('public','url')功能是获取public目录下的storage，
-            $picCover = Filesystem::getDiskConfig('public','url').'/'.str_replace('\\','/',$path);
+            $picCover = Filesystem::getDiskConfig('public_html','url').'/'.str_replace('\\','/',$path);
             //结果是 $picCover = storage/upload/20200825/***.jpg
 
             //获取图片名称
