@@ -1,5 +1,15 @@
 <?php
 
+
+
+
+
+
+
+
+
+
+
 namespace Composer;
 
 use Composer\Semver\VersionParser;
@@ -19,7 +29,7 @@ private static $installed = array (
     'aliases' => 
     array (
     ),
-    'reference' => '87f04abffb8174f1703efaa7195f4458234c9d81',
+    'reference' => '8c6edf05e02aacc4f8b71def0b7ece2def2c1b43',
     'name' => 'topthink/think',
   ),
   'versions' => 
@@ -274,7 +284,7 @@ private static $installed = array (
       'aliases' => 
       array (
       ),
-      'reference' => '87f04abffb8174f1703efaa7195f4458234c9d81',
+      'reference' => '8c6edf05e02aacc4f8b71def0b7ece2def2c1b43',
     ),
     'topthink/think-captcha' => 
     array (
@@ -321,6 +331,15 @@ private static $installed = array (
       ),
       'reference' => '57f9b98895b0ff4ae7b7b75e51456fd8cb8fb629',
     ),
+    'topthink/think-template' => 
+    array (
+      'pretty_version' => 'v2.0.8',
+      'version' => '2.0.8.0',
+      'aliases' => 
+      array (
+      ),
+      'reference' => 'abfc293f74f9ef5127b5c416310a01fe42e59368',
+    ),
     'topthink/think-trace' => 
     array (
       'pretty_version' => 'v1.4',
@@ -329,6 +348,15 @@ private static $installed = array (
       array (
       ),
       'reference' => '9a9fa8f767b6c66c5a133ad21ca1bc96ad329444',
+    ),
+    'topthink/think-view' => 
+    array (
+      'pretty_version' => 'v1.0.14',
+      'version' => '1.0.14.0',
+      'aliases' => 
+      array (
+      ),
+      'reference' => 'edce0ae2c9551ab65f9e94a222604b0dead3576d',
     ),
     'zendframework/zend-escaper' => 
     array (
