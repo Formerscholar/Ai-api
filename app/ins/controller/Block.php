@@ -92,7 +92,7 @@ class Block extends Admin{
         $res = StudentResult::get_page($wh,"*","id DESC",$page,$limit);
         $question_ids = array_column($res['list'],"question_id");
         if(!empty($question_ids))
-            $question_list = Question::where("id","in",$question_ids)->field("id,content")->orderRaw("field(id,".join(",",$question_ids).")")->select()->toArray();
+            $question_list = Question::where("id","in",$question_ids)->field("id,content_all")->orderRaw("field(id,".join(",",$question_ids).")")->select()->toArray();
         else
             $question_list = [];
         $question_list = array_column($question_list,null,"id");

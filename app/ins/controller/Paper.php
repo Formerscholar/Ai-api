@@ -55,8 +55,13 @@ class Paper extends Admin
 
         $local_question_list = PaperQuestion::where("paper_id",$paper_id)->where("parent_id",2)->order('sort','asc')->field("question_id,score,sort")->select()->toArray();
         $question_ids = array_column($local_question_list,"question_id");
-        $server_question_list = Question::where("id","in",$question_ids)->orderRaw("field(id,".join(",",$question_ids).")")->select()->toArray();
-        $server_question_list = array_column($server_question_list,null,"id");
+        if(empty($question_ids))
+            $server_question_list = [];
+        else
+        {
+            $server_question_list = Question::where("id","in",$question_ids)->orderRaw("field(id,".join(",",$question_ids).")")->select()->toArray();
+            $server_question_list = array_column($server_question_list,null,"id");
+        }
         foreach($local_question_list as $key => $val)
         {
             if(isset($server_question_list[$val['question_id']]))
