@@ -52,7 +52,23 @@ class User extends Admin{
     }
     //获得菜单栏
     public function getMenus(){
-        return my_json(session("user")['menu']);
+        $menu = session("menu");
+        if(empty($this->subject_ids))
+        {
+            $new_menu = [];
+            foreach($menu as $m)
+            {
+                if($m['id'] != 24)
+                {
+                    $new_menu[] = $m;
+                }
+            }
+        }
+
+        if(isset($new_menu))
+            return my_json($new_menu);
+        else
+            return my_json($menu);
     }
     //绑定微信
     public function bindWeixin(){

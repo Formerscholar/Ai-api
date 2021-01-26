@@ -65,9 +65,10 @@ class User extends Base
                 $right_ids = Db::name("right")->where("id","in",join(",",$right_ids))->column("id");
             }
         }
-        $user['menu'] = $menu;
-        $user['rights'] = $right_ids;
+        session('menu',$menu);
+        session('rights',$right_ids);
 
+        session("session_start_time",time());
         session("user",$user);
         session("user_sign",data_auth_sign($user));
         cookie("user",base64_encode(json_encode($user)));
