@@ -30,11 +30,50 @@ class Institution extends Admin
         $post_data = request()->except(["id"]);
         validate(\app\admin\validate\Institution::class)->check($post_data);
 
-        $post_data['add_time'] = time();
-        $post_data['grade_ids'] = join(",",$post_data['grade_ids']);
-        $model = \app\ins\model\Institution::create($post_data);
+        if($post_data['mobile'])
+        {
+            if(Teacher::where("account",$post_data['mobile'])->count())
+                return my_json([],-1,"该手机号码已经存在");
+        }
 
-        return my_json(["id"    =>  $model->id],0,"添加机构成功");
+        \think\facade\Db::startTrans();
+        try {
+            $post_data['add_time'] = time();
+            $post_data['grade_ids'] = join(",",$post_data['grade_ids']);
+            $model = \app\ins\model\Institution::create($post_data);
+
+            $new_school_data = [
+                "ins_id"    =>  $model->id,
+                "name"  =>  "默认校区",
+                "add_time"  =>  time(),
+                "address"   =>  $post_data['address'],
+            ];
+            $school_model = School::create($new_school_data);
+
+            if($post_data['mobile'])
+            {
+                $new_user_data = [
+                    "ins_id"    =>  $model->id,
+                    "account"   =>  $post_data['mobile'],
+                    "password"  =>  md5(config("my.default_password").config("my.password_secrect")),
+                    "salt"  =>  config("my.password_secrect"),
+                    "add_time"  =>  time(),
+                    "name"  =>  $post_data['mobile'],
+                    "school_id" =>  $school_model->id,
+                    "role_id"   =>  1,
+                ];
+                $user_model = Teacher::create($new_user_data);
+            }
+
+            // 提交事务
+            \think\facade\Db::commit();
+            return my_json(["id"    =>  $model->id],0,"添加机构成功");
+        } catch (\Exception $e) {
+            echo $e->getMessage();
+            // 回滚事务
+            \think\facade\Db::rollback();
+            return my_json([],-1,"添加机构成功失败");
+        }
     }
 
     public function edit(){

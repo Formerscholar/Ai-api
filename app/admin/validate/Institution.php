@@ -16,7 +16,7 @@ class Institution extends Validate{
         'short_name'  =>  'max:20',
         'address'  =>  'max:20',
         'telephone'  =>  'max:20',
-        'mobile'    =>  'mobile',
+        'mobile'    =>  'mobile|unique:institution',
         'contacter' =>  'max:20',
         'province'  =>  'number',
         'city'  =>  'number',
