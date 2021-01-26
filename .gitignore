@@ -4,3 +4,4 @@
 /config/database.php
 
 /.env
+/app/ins/config/cookie.php
