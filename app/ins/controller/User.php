@@ -66,15 +66,16 @@ class User extends Admin{
                     $menus_list = $menus_collection->toArray();
                     foreach($menus_list as $m)
                     {
-                        if($m['id'] != 24)
-                            $menu[] = [
-                                "id"    =>  $m['id'],
-                                "name"  =>  $m['name'],
-                                "route" =>  $m['route'],
-                                "desc"  =>  $m['desc'],
-                                "pid"   =>  $m['pid'],
-                                "icon"  =>  $m['icon'],
-                            ];
+                        if(empty($this->subject_ids) && $m['id'] == 24)
+                            continue;
+                        $menu[] = [
+                            "id"    =>  $m['id'],
+                            "name"  =>  $m['name'],
+                            "route" =>  $m['route'],
+                            "desc"  =>  $m['desc'],
+                            "pid"   =>  $m['pid'],
+                            "icon"  =>  $m['icon'],
+                        ];
                     }
                 }
             }
