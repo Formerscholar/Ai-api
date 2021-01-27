@@ -17,14 +17,6 @@ class User extends Base
     protected $deleteTime = 'delete_time';
     protected $defaultSoftDelete = 0;
 
-    public function scopeIns_Id($query){
-        $user = session("user");
-        if($user)
-        {
-            $query->where("ins_id",$user['ins_id']);
-        }
-    }
-
     //登录
     public static function doLogin(Array $user = []){
         if(empty($user))

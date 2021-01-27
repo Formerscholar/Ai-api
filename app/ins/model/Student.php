@@ -14,14 +14,6 @@ class Student extends Base{
     protected $deleteTime = 'delete_time';
     protected $defaultSoftDelete = 0;
 
-    public function scopeIns_Id($query){
-        $user = session("user");
-        if($user)
-        {
-            $query->where("ins_id",$user['ins_id']);
-        }
-    }
-
     public static function format_list(Array $list = []){
         $team_ids = fetch_array_value($list,'team_ids');
         $uids = fetch_array_value($list,'uids');

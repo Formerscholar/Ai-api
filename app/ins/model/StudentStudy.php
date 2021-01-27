@@ -9,14 +9,6 @@ namespace app\ins\model;
 
 class StudentStudy extends Base{
 
-    public function scopeIns_Id($query){
-        $user = session("user");
-        if($user)
-        {
-            $query->where("ins_id",$user['ins_id']);
-        }
-    }
-
     public static function format_list(Array $list = []){
         $course_ids = fetch_array_value($list,'course_id');
         $student_ids = fetch_array_value($list,'student_id');

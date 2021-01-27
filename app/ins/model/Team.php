@@ -14,18 +14,6 @@ class Team extends Base{
     use SoftDelete;
     protected $deleteTime = 'delete_time';
     protected $defaultSoftDelete = 0;
-    protected $readonly = ['ins_id'];
-
-    // 定义全局的查询范围
-//    protected $globalScope = ['ins_id'];
-
-    public function scopeIns_Id($query){
-        $user = session("user");
-        if($user)
-        {
-            $query->where("ins_id",$user['ins_id']);
-        }
-    }
 
     public static function format_list(Array $list = []){
         $school_ids = fetch_array_value($list,'school_id');
