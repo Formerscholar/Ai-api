@@ -30,55 +30,11 @@ class User extends Base
         if(empty($user))
             return false;
 
-        $menu = [];
-        $right_ids = [];
-
-        $role_model = Role::find($user['role_id']);
-        if($role_model)
-        {
-            if($role_model['menus'])
-            {
-                $right_str = $role_model['rights'];
-
-                $menus_collection  = Db::name("menu")->where("id","in",trim($role_model['menus'],","))->where("is_show","Y")->order("sort ASC")->select();
-                if($menus_collection && !$menus_collection->isEmpty())
-                {
-                    $menus_list = $menus_collection->toArray();
-                    foreach($menus_list as $m)
-                    {
-                        $menu[] = [
-                            "id"    =>  $m['id'],
-                            "name"  =>  $m['name'],
-                            "route" =>  $m['route'],
-                            "desc"  =>  $m['desc'],
-                            "pid"   =>  $m['pid'],
-                            "icon"  =>  $m['icon'],
-                        ];
-                        $right_str .= ",".$m['rights'].",";
-                    }
-                }
-
-                if($right_str)
-                    $right_ids = array_filter(array_unique(explode(",",$right_str)));
-
-                //过滤掉不存在的权限码
-                $right_ids = Db::name("right")->where("id","in",join(",",$right_ids))->column("id");
-            }
-        }
-        session('menu',$menu);
-        session('rights',$right_ids);
-
-        session("session_start_time",time());
-        session("user",$user);
-        session("user_sign",data_auth_sign($user));
         cookie("user",base64_encode(json_encode($user)));
         cookie("user_sign",data_auth_sign($user));
     }
     //登出
     public static function doLogout(){
-        session("user",null);
-        session("user_sign",null);
-
         cookie("user",null);
         cookie("user_sign",null);
     }

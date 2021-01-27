@@ -39,25 +39,7 @@ class Login extends BaseController
 
         //执行登录
         User::doLogin($user_model->getData());
-
-        $re = [
-            "id"    =>  $user_model['id'],
-            "name"  =>  $user_model['name'],
-            "role_id"   =>  $user_model['role_id'],
-            "openid" =>  $user_model['openid'],
-            "unionid" =>  $user_model['unionid'],
-            "avatar" =>  $user_model['avatar'],
-            "school_id" =>  $user_model['school_id'],
-            "subject_ids"    =>  $user_model['subject_ids'],
-            "current_subject_id"    =>  $user_model['current_subject_id'],
-        ];
-        $subject_model = Subject::find($user_model['subject_id']);
-        if($subject_model)
-            $re['subject_name'] = $subject_model['title'];
-        else
-            $re['subject_name'] = "";
-
-        return my_json($re,0,"登录成功");
+        return my_json([],0,"登录成功");
     }
     //获得微信授权登录地址,给前端生成二维码
     public function getWxAuthUrl(){

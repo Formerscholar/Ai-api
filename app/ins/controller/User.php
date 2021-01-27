@@ -8,7 +8,9 @@
 
 namespace app\ins\controller;
 
+use app\ins\model\Role;
 use app\ins\model\School;
+use think\facade\Db;
 
 class User extends Admin{
     //获得当前用户的信息
@@ -52,23 +54,33 @@ class User extends Admin{
     }
     //获得菜单栏
     public function getMenus(){
-        $menu = session("menu");
-        if(empty($this->subject_ids))
+        $menu = [];
+        $role_model = Role::find($this->role_id);
+        if($role_model)
         {
-            $new_menu = [];
-            foreach($menu as $m)
+            if($role_model['menus'])
             {
-                if($m['id'] != 24)
+                $menus_collection  = Db::name("menu")->where("id","in",trim($role_model['menus'],","))->where("is_show","Y")->order("sort ASC")->select();
+                if($menus_collection && !$menus_collection->isEmpty())
                 {
-                    $new_menu[] = $m;
+                    $menus_list = $menus_collection->toArray();
+                    foreach($menus_list as $m)
+                    {
+                        if($m['id'] != 24)
+                            $menu[] = [
+                                "id"    =>  $m['id'],
+                                "name"  =>  $m['name'],
+                                "route" =>  $m['route'],
+                                "desc"  =>  $m['desc'],
+                                "pid"   =>  $m['pid'],
+                                "icon"  =>  $m['icon'],
+                            ];
+                    }
                 }
             }
         }
 
-        if(isset($new_menu))
-            return my_json($new_menu);
-        else
-            return my_json($menu);
+        return my_json($menu);
     }
     //绑定微信
     public function bindWeixin(){
