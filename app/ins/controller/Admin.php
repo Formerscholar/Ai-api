@@ -64,7 +64,7 @@ class Admin extends BaseController{
         if($decode_cookie_user && $cookie_user && $cookie_user_sign == data_auth_sign($decode_cookie_user))
         {
             $this->uid = 1;
-            $user_model = User::find($session_user['id']);
+            $user_model = User::find($decode_cookie_user['id']);
             if(!$user_model)
                 throw new ValidateException("未找到用户信息");
 
@@ -80,7 +80,9 @@ class Admin extends BaseController{
 
             //根据哪些用户信息改变了，需要重新登录
             if(isset($decode_cookie_user['role_id']) && $decode_cookie_user['role_id'] != $user_model['role_id'])
-                throw new ValidateException("检测到用户信息改变，需要重新登录");
+                throw new ValidateException("检测到用户角色信息改变，需要重新登录");
+            if(isset($decode_cookie_user['school_id']) && $decode_cookie_user['school_id'] != $user_model['school_id'])
+                throw new ValidateException("检测到用户校区信息改变，需要重新登录");
 
             $this->ins_id = $user_model['ins_id'];
             $this->school_id = $user_model['school_id'];
