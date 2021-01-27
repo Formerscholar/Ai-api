@@ -15,7 +15,7 @@ use think\facade\Db;
 class User extends Admin{
     //获得当前用户的信息
     public function getUserInfo(){
-        $user_model = \app\ins\model\User::field("account,avatar,name,sex,school_id,openid,unionid")->find($this->uid);
+        $user_model = \app\ins\model\User::field("account,avatar,name,sex,school_id,openid,unionid,current_subject_id,subject_ids")->find($this->uid);
 
         return my_json($user_model->getData());
     }
@@ -66,8 +66,6 @@ class User extends Admin{
                     $menus_list = $menus_collection->toArray();
                     foreach($menus_list as $m)
                     {
-                        if(empty($this->subject_ids) && $m['id'] == 24)
-                            continue;
                         $menu[] = [
                             "id"    =>  $m['id'],
                             "name"  =>  $m['name'],
