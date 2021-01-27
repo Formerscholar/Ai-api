@@ -52,7 +52,7 @@ class User extends Base
             if(isset($item['subject_ids']))
             {
                 $item['subject_data'] = [];
-                $item['subject_ids'] = array_map(function($v){ return (int)$v; },explode(",",$item['subject_ids']));
+                $item['subject_ids'] = array_map(function($v){ return (int)$v; },array_filter(explode(",",$item['subject_ids'])));
 
                 foreach($item['subject_ids'] as $subject_id)
                 {

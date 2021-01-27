@@ -43,7 +43,7 @@ class Team extends Base{
             if(isset($item['uids']))
             {
                 $item['user_data'] = [];
-                $item['uids'] = array_map(function($v){ return (int)$v; },explode(",",$item['uids']));
+                $item['uids'] = array_map(function($v){ return (int)$v; },array_filter(explode(",",$item['uids'])));
 
                 foreach($item['uids'] as $uid)
                 {

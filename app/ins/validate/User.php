@@ -20,7 +20,8 @@ class User extends Validate{
         'point' =>  'number',
         'is_enable' =>  'in:0,1',
         'school_id' =>  'require|integer',
-        'subject_ids' =>  'require|array',
+        'subject_ids' =>  'array',
+        'role_id' =>  'require|integer',
     ];
     protected $message  =   [
         'account.require' => '手机号必填',
@@ -30,12 +31,12 @@ class User extends Validate{
         'repassword.confirm' => '确认密码与密码不符',
     ];
     protected $scene = [
-        'add'  =>  ['account','password','repassword','name','sex','point','is_enable','school_id','subject_id'],
+        'add'  =>  ['account','password','repassword','name','sex','point','is_enable','school_id','subject_id','role_id'],
     ];
     // 老师
     public function sceneEdit()
     {
-        return $this->only(['password','name','sex','is_enable','school_id','subject_id'])
+        return $this->only(['password','name','sex','is_enable','school_id','subject_id','role_id'])
             ->remove('password', 'require');
     }
     // 修改当前用户信息

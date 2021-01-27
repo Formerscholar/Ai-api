@@ -32,7 +32,7 @@ class Course extends Base{
             if(isset($item['school_ids']))
             {
                 $item['school_data'] = [];
-                $item['school_ids'] = array_map(function($v){ return (int)$v; },explode(",",$item['school_ids']));
+                $item['school_ids'] = array_map(function($v){ return (int)$v; },array_filter(explode(",",$item['school_ids'])));
 
                 foreach($item['school_ids'] as $school_id)
                 {

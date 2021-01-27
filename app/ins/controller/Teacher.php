@@ -72,7 +72,7 @@ class Teacher extends Admin{
         $post_data = request()->except(["id"]);
         validate(\app\ins\validate\User::class)->scene("add")->check($post_data);
 
-        $post_data['subject_ids'] = join(",",$post_data['subject_ids']);
+        $post_data['subject_ids'] = empty($post_data['subject_ids'])?"":join(",",$post_data['subject_ids']);
         $post_data['password'] = md5(config("my.default_password").config("my.password_secrect"));
         $post_data['salt'] = config("my.password_secrect");
 

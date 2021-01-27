@@ -36,7 +36,7 @@ class Student extends Base{
             if(isset($item['team_ids']))
             {
                 $item['team_data'] = [];
-                $item['team_ids'] = array_map(function($v){ return (int)$v; },explode(",",$item['team_ids']));
+                $item['team_ids'] = array_map(function($v){ return (int)$v; },array_filter(explode(",",$item['team_ids'])));
 
                 foreach($item['team_ids'] as $team_id)
                 {
@@ -48,7 +48,7 @@ class Student extends Base{
             if(isset($item['uids']))
             {
                 $item['user_data'] = [];
-                $item['uids'] = array_map(function($v){ return (int)$v; },explode(",",$item['uids']));
+                $item['uids'] = array_map(function($v){ return (int)$v; },array_filter(explode(",",$item['uids'])));
 
                 foreach($item['uids'] as $uid)
                 {
