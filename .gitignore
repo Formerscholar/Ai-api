@@ -5,3 +5,7 @@
 
 /.env
 /app/ins/config/cookie.php
+/composer.json
+/composer.lock
+/app/admin/config/cookie.php
+/think
