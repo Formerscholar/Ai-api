@@ -14,7 +14,7 @@ use app\ins\model\School;
 class User extends \app\admin\controller\Admin{
     //获得当前用户的信息
     public function getUserInfo(){
-        $user_model = Admin::find($this->uid);
+        $user_model = Admin::field("account,true_name,avatar_file,mobile,email")->find($this->uid);
 
         return my_json($user_model->getData());
     }

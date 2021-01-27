@@ -22,15 +22,11 @@ class Admin extends Base
         if(empty($user))
             return false;
 
-        session("user",$user);
-        session("user_sign",data_auth_sign($user));
         cookie("user",base64_encode(json_encode($user)));
         cookie("user_sign",data_auth_sign($user));
     }
     //登出
     public static function doLogout(){
-        session("user",null);
-        session("user_sign",null);
         cookie("user",null);
         cookie("user_sign",null);
     }
