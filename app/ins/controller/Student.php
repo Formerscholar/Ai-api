@@ -9,16 +9,20 @@ namespace app\ins\controller;
 
 //学生管理
 use app\ins\model\CourseBuy;
+use app\ins\model\Grade;
 use app\ins\model\Knowledge;
 use app\ins\model\Question;
 use app\ins\model\QuestionCategory;
+use app\ins\model\School;
 use app\ins\model\StudentResult;
 use app\ins\model\StudentStudy;
 use app\ins\model\Subject;
 use app\ins\model\Team;
 use app\ins\model\User;
 use app\Request;
+use PhpOffice\PhpSpreadsheet\Reader\Xlsx;
 use think\facade\Db;
+use think\facade\Filesystem;
 
 class Student extends Admin{
     //学生列表
@@ -42,7 +46,7 @@ class Student extends Admin{
         if($start_time && $end_time && $start_time < $end_time)
             $where[] = ['add_time','BETWEEN',[$start_time,$end_time]];
 
-        $list = \app\ins\model\Student::get_page($where,"*","add_time DESC",$page,$limit);
+        $list = \app\ins\model\Student::get_page($where,"*","id DESC",$page,$limit);
         $list['list'] = \app\ins\model\Student::format_list($list['list']);
 
         return my_json($list);
@@ -326,6 +330,127 @@ class Student extends Admin{
             return my_json([],-1,"未找到错题数据");
 
         StudentResult::where("id",$student_result_model['id'])->delete();
+        return my_json();
+    }
+    //上传
+    public function upload(){
+        $file = request()->file('file');
+        if(empty($file))
+            return my_json([],-1,"未检测到上传文件");
+
+        $result = validate([
+            'file'  =>  ['fileSize:102400,fileExt:xlsx,xls']
+        ])->check(["file"   =>  $file]);
+        if(!$result)
+            return my_json([],-1,"检测附件未通过");
+
+        //上传到服务器,
+        $path = Filesystem::disk('public_html')->putFile('upload',$file);
+
+        $reader = new Xlsx();
+        $spreadsheet = $reader->load($path);
+        $datas = $spreadsheet->getActiveSheet()->toArray();
+
+        //去掉标题
+        array_shift($datas);
+
+        //检测导入的数据,同时赋值
+        $re = [];
+        foreach($datas as $d)
+        {
+            $tmp = [
+                "name"  =>  $d[0],
+                "sex"  =>  $d[1],
+                "school"  =>  $d[2],
+                "team"  =>  $d[3],
+                "teacher"  =>  $d[4],
+                "mobile"  =>  $d[5],
+                "saler"  =>  $d[6],
+            ];
+            //检测姓名
+            if(empty($tmp["name"]) || mb_strlen($tmp["name"]) > 20)
+                continue;
+
+            //检测性别
+            if(!in_array($tmp["sex"],['男','女']))
+                continue;
+            $tmp['sex_value'] = $tmp["sex"] == '男' ? 1:2;
+
+            //检测校区
+            if(!empty($tmp["school"]))
+            {
+                $school_model = School::scope("ins_id")->where("name",$tmp["school"])->find();
+                if(!$school_model)
+                    continue;
+                $tmp['school_value'] = $school_model['id'];
+            }
+            else
+                continue;
+
+            //检测班级
+            if(!empty($tmp["team"]))
+            {
+                $team_model = Team::where("name",$tmp["team"])->find();
+                if(!$team_model)
+                    continue;
+
+                $tmp['team_value'] = $team_model['id'];
+            }
+
+            //检测老师
+            if(!empty($tmp['teacher']))
+            {
+                $teacher_model = User::scope("ins_id")->where("name",$tmp["teacher"])->find();
+                if(!$teacher_model)
+                    continue;
+
+                $tmp['teacher_value'] = $teacher_model['id'];
+            }
+
+            //检测联系方式
+            if(!empty($tmp['mobile']) && strlen($tmp['mobile']) != 11)
+                continue;
+            //检测销售人员
+            if(!empty($tmp['saler']))
+            {
+                $saler_model = User::scope("ins_id")->where("name",$tmp["saler"])->find();
+                if(!$saler_model)
+                    continue;
+
+                $tmp['saler_value'] = $saler_model['id'];
+            }
+            $re[] = $tmp;
+        }
+
+        return my_json($re);
+    }
+    //导入学生数据
+    public function import(){
+        $list = input("post.list");
+
+        if(!is_array($list))
+            return my_json([],-1,"导入学生数据格式不正确");
+        if(empty($list))
+            return my_json([],-1,"导入学生数据不能为空");
+
+        $insert_data = [];
+        foreach($list as $key => $value)
+        {
+            $insert_data[] = [
+                "ins_id"    =>  $this->ins_id,
+                "name"  =>  $value['name'],
+                "sex"   =>  $value['sex_value'],
+                "school_id" =>  $value['school_value'],
+                "team_ids" =>  empty($value['team_value']) ? "" : $value['team_value'],
+                "uids" =>  empty($value['teacher_value']) ? "":$value['teacher_value'],
+                "mobile"    =>  $value['mobile'],
+                "saler" =>  $value['saler_value'],
+                "add_time"  =>  time(),
+            ];
+        }
+        $student_model = new \app\ins\model\Student();
+        $student_model->saveAll($insert_data);
+
         return my_json();
     }
 }
