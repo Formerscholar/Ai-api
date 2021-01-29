@@ -111,6 +111,7 @@ class Student extends Admin{
         $post_data['uids'] = !empty($post_data['uids']) ?join(",",$post_data['uids']) : '';
         $post_data['ins_id'] = $this->ins_id;
         $post_data['add_time'] = time();
+
         $student_model = \app\ins\model\Student::create($post_data);
 
         //更新老师的学生数

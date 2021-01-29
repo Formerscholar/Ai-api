@@ -18,6 +18,8 @@ class Student extends Validate{
         'school_id'  =>  'require|number',
         'team_ids' =>  'array',
         'uids'  =>  'array',
+        'saler'  =>  'number',
+        'mark' =>  'max:200',
     ];
     protected $message  =   [
         'name.require' => '姓名必填',
