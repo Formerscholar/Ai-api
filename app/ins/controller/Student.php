@@ -356,72 +356,7 @@ class Student extends Admin{
         array_shift($datas);
 
         //检测导入的数据,同时赋值
-        $re = [];
-        foreach($datas as $d)
-        {
-            $tmp = [
-                "name"  =>  $d[0],
-                "sex"  =>  $d[1],
-                "school"  =>  $d[2],
-                "team"  =>  $d[3],
-                "teacher"  =>  $d[4],
-                "mobile"  =>  $d[5],
-                "saler"  =>  $d[6],
-            ];
-            //检测姓名
-            if(empty($tmp["name"]) || mb_strlen($tmp["name"]) > 20)
-                continue;
-
-            //检测性别
-            if(!in_array($tmp["sex"],['男','女']))
-                continue;
-            $tmp['sex_value'] = $tmp["sex"] == '男' ? 1:2;
-
-            //检测校区
-            if(!empty($tmp["school"]))
-            {
-                $school_model = School::scope("ins_id")->where("name",$tmp["school"])->find();
-                if(!$school_model)
-                    continue;
-                $tmp['school_value'] = $school_model['id'];
-            }
-            else
-                continue;
-
-            //检测班级
-            if(!empty($tmp["team"]))
-            {
-                $team_model = Team::where("name",$tmp["team"])->find();
-                if(!$team_model)
-                    continue;
-
-                $tmp['team_value'] = $team_model['id'];
-            }
-
-            //检测老师
-            if(!empty($tmp['teacher']))
-            {
-                $teacher_model = User::scope("ins_id")->where("name",$tmp["teacher"])->find();
-                if(!$teacher_model)
-                    continue;
-
-                $tmp['teacher_value'] = $teacher_model['id'];
-            }
-
-            //检测联系方式
-            if(!empty($tmp['mobile']) && strlen($tmp['mobile']) != 11)
-                continue;
-            //检测销售人员
-            if(!empty($tmp['saler']))
-            {
-                $saler_model = User::scope("ins_id")->where("name",$tmp["saler"])->find();
-                if(!$saler_model)
-                    continue;
-
-                $tmp['saler_value'] = $saler_model['id'];
-            }
-            $re[] = $tmp;
-        }
+        $re = $this->checkImportData($datas);
 
         return my_json($re);
     }
@@ -435,23 +370,268 @@ class Student extends Admin{
             return my_json([],-1,"导入学生数据不能为空");
 
         $insert_data = [];
-        foreach($list as $key => $value)
+        $filter_list = $this->filterImportData($list,"name");
+
+        foreach($filter_list as $key => $value)
         {
-            $insert_data[] = [
-                "ins_id"    =>  $this->ins_id,
-                "name"  =>  $value['name'],
-                "sex"   =>  $value['sex_value'],
-                "school_id" =>  $value['school_value'],
-                "team_ids" =>  empty($value['team_value']) ? "" : $value['team_value'],
-                "uids" =>  empty($value['teacher_value']) ? "":$value['teacher_value'],
-                "mobile"    =>  $value['mobile'],
-                "saler" =>  $value['saler_value'],
-                "add_time"  =>  time(),
-            ];
+            if(!$value['error'])
+                $insert_data[] = [
+                    "ins_id"    =>  $this->ins_id,
+                    "name"  =>  $value['name'],
+                    "sex"   =>  $value['sex_value'],
+                    "school_id" =>  $value['school_value'],
+                    "team_ids" =>  empty($value['team_value']) ? "" : join(",",$value['team_value']),
+                    "uids" =>  empty($value['teacher_value']) ? "": join(",",$value['teacher_value']),
+                    "mobile"    =>  $value['mobile'],
+                    "saler" =>  $value['saler_value'],
+                    "add_time"  =>  time(),
+                ];
         }
+
         $student_model = new \app\ins\model\Student();
         $student_model->saveAll($insert_data);
 
         return my_json();
+    }
+    //检测批量数据,返回所有数据
+    protected function checkImportData($datas){
+        $re = [];
+        foreach($datas as $d)
+        {
+            $tmp = [
+                "name"  =>  $d[0],
+                "sex"  =>  $d[1],
+                "school"  =>  $d[2],
+                "team"  =>  $d[3],
+                "teacher"  =>  $d[4],
+                "mobile"  =>  $d[5],
+                "saler"  =>  $d[6],
+
+                "error" => 0,
+                "message" => ""
+            ];
+            //检测姓名
+            if(empty($tmp["name"]) || mb_strlen($tmp["name"]) > 20)
+            {
+                $tmp['error'] = 1;
+                $tmp['message'] = "姓名为空或者长度不能超过20个字符";
+            }
+            else
+            {
+                $student_exist = \app\ins\model\Student::where("name",$tmp["name"])->count();
+                if($student_exist)
+                {
+                    $tmp['error'] = 1;
+                    $tmp['message'] = "学生已经存在";
+                }
+            }
+
+            //检测性别
+            if(!in_array($tmp["sex"],['男','女']))
+            {
+                $tmp['error'] = 1;
+                $tmp['message'] = "性别必须是男或者女";
+            }
+            else
+                $tmp['sex_value'] = $tmp["sex"] == '男' ? 1:2;
+
+            //检测校区
+            if(!empty($tmp["school"]))
+            {
+                $school_model = School::scope("ins_id")->where("name",$tmp["school"])->find();
+                if(!$school_model)
+                {
+                    $tmp['error'] = 1;
+                    $tmp['message'] = "未找到校区数据";
+                }
+                $tmp['school_value'] = $school_model['id'];
+            }
+            else
+            {
+                $tmp['error'] = 1;
+                $tmp['message'] = "校区不能为空";
+            }
+
+            //检测班级
+            if(!empty($tmp["team"]))
+            {
+                $team_names = explode("，",$tmp["team"]);//中文的逗号
+                $team_ids = Team::whereIn("name",$team_names)->column("id");
+                if(!empty($team_ids))
+                {
+                    $tmp['team_value'] = $team_ids;
+                }
+                else
+                {
+                    $tmp['error'] = 1;
+                    $tmp['message'] = "未找到班级数据";
+                }
+            }
+
+            //检测老师
+            if(!empty($tmp['teacher']))
+            {
+                $teacher_names = explode("，",$tmp["teacher"]);//中文的逗号
+                $teacher_ids = User::scope("ins_id")->whereIn("name",$teacher_names)->column("id");
+                if(empty($teacher_ids))
+                {
+                    $tmp['error'] = 1;
+                    $tmp['message'] = "未找到老师数据";
+                }
+                else
+                    $tmp['teacher_value'] = $teacher_ids;
+            }
+
+            //检测联系方式
+            if(!empty($tmp['mobile']) && !preg_match('/1[34578]{1}\d{9}/', $tmp["mobile"]))
+            {
+                $tmp['error'] = 1;
+                $tmp['message'] = "联系方式格式不正确";
+            }
+            //检测销售人员
+            if(!empty($tmp['saler']))
+            {
+                $saler_names = explode("，",$tmp["saler"]);//中文的逗号
+                $saler_ids = User::scope("ins_id")->whereIn("name",$saler_names)->column("id");
+                if(empty($saler_ids))
+                {
+                    $tmp['error'] = 1;
+                    $tmp['message'] = "未找到销售人员数据";
+                }
+                else
+                    $tmp['saler_value'] = $saler_ids;
+            }
+            $re[] = $tmp;
+        }
+
+        return $re;
+    }
+    //过滤批量数据,返回过滤后的数据
+    //$filter_key 按照哪个键去除重复值
+    protected function filterImportData($datas,$filter_key){
+        //根据$filter_key，过滤重复的值
+        $filter_list = [];
+
+        if($filter_key)
+        {
+            foreach($datas as $key => $value)
+            {
+                if(!empty($value[$filter_key]))
+                {
+                    $filter_list[trim($value[$filter_key],"")] = $value;
+                }
+            }
+        }
+        $filter_list = array_values($filter_list);
+        $re = [];
+        foreach($filter_list as $d)
+        {
+            $tmp = [
+                "name"  =>  $d['name'],
+                "sex"  =>  $d['sex'],
+                "school"  =>  $d['school'],
+                "team"  =>  $d['team'],
+                "teacher"  =>  $d['teacher'],
+                "mobile"  =>  $d['mobile'],
+                "saler"  =>  $d['saler'],
+
+                "error" => 0,
+                "message" => ""
+            ];
+            //检测姓名
+            if(empty($tmp["name"]) || mb_strlen($tmp["name"]) > 20)
+            {
+                $tmp['error'] = 1;
+                $tmp['message'] = "姓名为空或者长度不能超过20个字符";
+            }
+            else
+            {
+                $student_exist = \app\ins\model\Student::where("name",$tmp["name"])->count();
+                if($student_exist)
+                {
+                    $tmp['error'] = 1;
+                    $tmp['message'] = "学生已经存在";
+                }
+            }
+
+            //检测性别
+            if(!in_array($tmp["sex"],['男','女']))
+            {
+                $tmp['error'] = 1;
+                $tmp['message'] = "性别必须是男或者女";
+            }
+            else
+                $tmp['sex_value'] = $tmp["sex"] == '男' ? 1:2;
+
+            //检测校区
+            if(!empty($tmp["school"]))
+            {
+                $school_model = School::scope("ins_id")->where("name",$tmp["school"])->find();
+                if(!$school_model)
+                {
+                    $tmp['error'] = 1;
+                    $tmp['message'] = "未找到校区数据";
+                }
+                $tmp['school_value'] = $school_model['id'];
+            }
+            else
+            {
+                $tmp['error'] = 1;
+                $tmp['message'] = "校区不能为空";
+            }
+
+            //检测班级
+            if(!empty($tmp["team"]))
+            {
+                $team_names = explode("，",$tmp["team"]);//中文的逗号
+                $team_ids = Team::whereIn("name",$team_names)->column("id");
+                if(!empty($team_ids))
+                {
+                    $tmp['team_value'] = $team_ids;
+                }
+                else
+                {
+                    $tmp['error'] = 1;
+                    $tmp['message'] = "未找到班级数据";
+                }
+            }
+
+            //检测老师
+            if(!empty($tmp['teacher']))
+            {
+                $teacher_names = explode("，",$tmp["teacher"]);//中文的逗号
+                $teacher_ids = User::scope("ins_id")->whereIn("name",$teacher_names)->column("id");
+                if(empty($teacher_ids))
+                {
+                    $tmp['error'] = 1;
+                    $tmp['message'] = "未找到老师数据";
+                }
+                else
+                    $tmp['teacher_value'] = $teacher_ids;
+            }
+
+            //检测联系方式
+            if(!empty($tmp['mobile']) && !preg_match('/1[34578]{1}\d{9}/', $tmp["mobile"]))
+            {
+                $tmp['error'] = 1;
+                $tmp['message'] = "联系方式格式不正确";
+            }
+            //检测销售人员
+            if(!empty($tmp['saler']))
+            {
+                $saler_names = explode("，",$tmp["saler"]);//中文的逗号
+                $saler_ids = User::scope("ins_id")->whereIn("name",$saler_names)->column("id");
+                if(empty($saler_ids))
+                {
+                    $tmp['error'] = 1;
+                    $tmp['message'] = "未找到销售人员数据";
+                }
+                else
+                    $tmp['saler_value'] = $saler_ids;
+            }
+            $re[] = $tmp;
+        }
+
+        return $re;
     }
 }
