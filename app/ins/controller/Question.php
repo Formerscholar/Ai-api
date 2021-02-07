@@ -180,9 +180,10 @@ class Question extends Admin
         $condition['level'] = config("my.question_level");//难度
 
         $curr_subject_ids = explode(",",$this->subject_ids);
-        $condition['subject'] = Subject::whereIn("id",$curr_subject_ids)->field("id,title")->orderRaw("field(id,".join(",",$curr_subject_ids).")")->select()->toArray();
-        if(empty($curr_subject_ids))
+        if(empty($this->subject_ids) || empty($curr_subject_ids))
             return my_json([],-1,"未设置老师科目信息");
+        $condition['subject'] = Subject::whereIn("id",$curr_subject_ids)->field("id,title")->orderRaw("field(id,".join(",",$curr_subject_ids).")")->select()->toArray();
+
         $default_subject_id = $this->subject_id;
         if(empty($default_subject_id))
             $default_subject_id = current($curr_subject_ids);
