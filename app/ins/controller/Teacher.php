@@ -63,7 +63,7 @@ class Teacher extends Admin{
         if(!$user_model)
             return my_json([],-1,"老师数据不存在");
 
-        $data['subject_ids'] = join(",",$data['subject_ids']);
+        $data['subject_ids'] = empty($data['subject_ids'])? "" : join(",",$data['subject_ids']);
         $data['update_time'] = time();
         if(isset($data['password']) && $data['password'])
             $data['password'] = md5($data['password'].$user_model['salt']);

@@ -16,6 +16,12 @@ class Base extends Model{
 
         $query->where("ins_id",$decode_cookie_user['ins_id']);
     }
+    public function scopeSchool_Id($query){
+        $cookie_user = cookie("user");
+        $decode_cookie_user = json_decode(base64_decode($cookie_user),true);
+
+        $query->where("school_id",$decode_cookie_user['school_id']);
+    }
 
     public static function get_sum($where = [], $field){
         return self::where($where)->sum($field);

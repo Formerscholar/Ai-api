@@ -10,6 +10,7 @@ namespace app\ins\controller;
 
 //公共接口
 use app\ins\model\Area;
+use app\ins\model\BuyType;
 use app\ins\model\Course;
 use app\ins\model\Grade;
 use app\ins\model\Institution;
@@ -28,6 +29,11 @@ use app\ins\model\User;
 use think\facade\Filesystem;
 
 class Block extends Admin{
+
+    //获得全部课时类型
+    public function getAllBuyType(){
+        return my_json(BuyType::get_all([],"id,name"));
+    }
     //获得全部角色
     public function getAllRole(){
         return my_json(Role::get_all([],"id,name"));

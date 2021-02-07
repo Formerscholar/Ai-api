@@ -64,6 +64,7 @@ class Study extends Admin{
     //添加学生上课记录
     public function add(){
         $post_data = request()->post();
+        $post_data['school_id'] = $this->school_id;
         validate(\app\ins\validate\StudentStudy::class)->scene("add")->check($post_data);
 
         $student_id = request()->post("student_id",0,"int");
@@ -135,6 +136,7 @@ class Study extends Admin{
                 "student_id"    =>  $val['id'],
                 "student_name"  =>  $val['name'],
                 "content"   =>  $post_data['content'],
+                "comment"   =>  $post_data['comment'],
                 "study_time"  =>  $post_data['study_time'],
                 "add_time"  =>  time(),
                 "paper_id"  =>  $paper_id,
@@ -234,6 +236,7 @@ class Study extends Admin{
         }
 
         $update_study_data = [
+            "comment"   =>  $post_data['comment'],
             "content"   =>  $post_data['content'],
             "study_time"    =>  $post_data['study_time'],
             "paper_id"  =>  $post_data['paper_id'],

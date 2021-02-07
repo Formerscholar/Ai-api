@@ -17,6 +17,7 @@ class StudentStudy extends Validate{
         'student_id'    =>  'require|array',
         'study_time'=>  'require',
         'content' =>  'require|max:1000',
+        'comment' =>  'require|max:1000',
         'paper_id'  =>  'integer',
         'questions'  =>  'array',
     ];

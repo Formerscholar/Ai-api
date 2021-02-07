@@ -51,6 +51,8 @@ class Team extends Base{
                         $item['user_data'][] = $user_list[$uid];
                 }
             }
+
+            $item['student_count'] = Student::whereFindInSet("team_ids",$item['id'])->count();
         }
 
         return $list;
