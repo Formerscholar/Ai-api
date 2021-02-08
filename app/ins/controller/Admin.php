@@ -10,6 +10,7 @@ namespace app\ins\controller;
 use app\BaseController;
 use app\ins\model\Right;
 use app\ins\model\Role;
+use app\ins\model\Team;
 use app\ins\model\User;
 use think\exception\HttpException;
 use think\exception\HttpResponseException;
@@ -31,6 +32,7 @@ class Admin extends BaseController{
         $this->school_id = $user_model['school_id'];
         $this->subject_ids = $user_model['subject_ids'];
         $this->subject_id = $user_model['current_subject_id'];
+        $this->team_ids = Team::whereFindInSet("uids",$this->uid)->column("id");
         //检测权限
         $this->checkRight();
         //加载系统的配置（数据库中的）

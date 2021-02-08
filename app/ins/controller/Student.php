@@ -39,8 +39,16 @@ class Student extends Admin{
         $where[] = ['is_delete','=',0];
         if($keyword)
             $where[] = ['name|mobile','like',"%{$keyword}%"];
-        if($team_id)
-            $where[] = ['team_ids','find in set',$team_id];
+
+        if(empty($team_id))
+            $team_id = $this->team_ids;
+        $tmp = [];
+        foreach($team_id as $key => $val)
+        {
+            $tmp[] = "FIND_IN_SET({$val},team_ids)";
+        }
+        $where[] = Db::raw(join(" OR ",$tmp));
+
         if($school_id)
             $where[] = ['school_id','=',$school_id];
         if($start_time && $end_time && $start_time < $end_time)

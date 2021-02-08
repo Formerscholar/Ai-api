@@ -10,14 +10,19 @@ namespace app\ins\controller;
 
 use app\ins\model\Role;
 use app\ins\model\School;
+use app\ins\model\Team;
 use think\facade\Db;
 
 class User extends Admin{
     //获得当前用户的信息
     public function getUserInfo(){
         $user_model = \app\ins\model\User::field("account,avatar,name,sex,school_id,openid,unionid,current_subject_id,subject_ids")->find($this->uid);
+        $user_data = $user_model->getData();
 
-        return my_json($user_model->getData());
+        //获得负责的班级
+        $user_data['team_ids'] = Team::whereFindInSet("uids",$this->uid)->column("id");
+
+        return my_json($user_data);
     }
     //保存当前用户的信息
     public function saveUserInfo(){

@@ -30,6 +30,13 @@ use think\facade\Filesystem;
 
 class Block extends Admin{
 
+    //获得老师负责的班级列表
+    public function getAllTeacherTeam(){
+        $model = Team::scope("ins_id")->whereFindInSet("uids",$this->uid)->field("id,name")->select();
+
+        return my_json($model->toArray());
+    }
+
     //获得全部课时类型
     public function getAllBuyType(){
         return my_json(BuyType::get_all([],"id,name"));

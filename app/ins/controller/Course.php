@@ -13,6 +13,7 @@ use app\ins\model\Student;
 use app\ins\model\StudentResult;
 use app\ins\model\StudentStudy;
 use app\Request;
+use think\facade\Db;
 
 class Course extends Admin{
 
@@ -105,13 +106,25 @@ class Course extends Admin{
         $limit = input("get.limit",10,"int");
 
         $where[] = ["ins_id","=",$this->ins_id];
-//        $where[] = ["school_id","=",$this->school_id];
         $keyword = input("get.keyword","");
         $school_id = input("get.school_id",0,"int");
+        $has_hour = input("get.has_hour");
+
         if($keyword)
             $where[] = ['student_name','like',"%{$keyword}%"];
         if($school_id)
             $where[] = ["school_id",'=',$school_id];
+        if($has_hour !== "")
+        {
+            if($has_hour)
+            {
+                $where[] = Db::raw("buy_hour - used_hour > 0");
+            }
+            else
+            {
+                $where[] = Db::raw("buy_hour - used_hour <= 0");
+            }
+        }
 
         $list = CourseBuy::get_page($where,"*","add_time DESC",$page,$limit);
         $list['list'] = CourseBuy::format_list($list['list']);
