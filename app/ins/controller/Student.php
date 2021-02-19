@@ -426,7 +426,7 @@ class Student extends Admin{
             }
             else
             {
-                $student_exist = \app\ins\model\Student::where("name",$tmp["name"])->count();
+                $student_exist = \app\ins\model\Student::scope("ins_id")->where("name",$tmp["name"])->count();
                 if($student_exist)
                 {
                     $tmp['error'] = 1;

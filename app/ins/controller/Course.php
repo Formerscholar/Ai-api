@@ -8,12 +8,16 @@
 namespace app\ins\controller;
 
 //课程管理
+use app\ins\model\BuyType;
 use app\ins\model\CourseBuy;
+use app\ins\model\School;
 use app\ins\model\Student;
 use app\ins\model\StudentResult;
 use app\ins\model\StudentStudy;
 use app\Request;
+use PhpOffice\PhpSpreadsheet\Reader\Xlsx;
 use think\facade\Db;
+use think\facade\Filesystem;
 
 class Course extends Admin{
 
@@ -207,5 +211,297 @@ class Course extends Admin{
         $model->saveAll($batch_data);
 
         return my_json([],0,"删除购买记录成功");
+    }
+    //上传课时记录附件
+    public function uploadBuy(){
+        $file = request()->file('file');
+        if(empty($file))
+            return my_json([],-1,"未检测到上传文件");
+
+        $result = validate([
+            'file'  =>  ['fileSize:102400,fileExt:xlsx,xls']
+        ])->check(["file"   =>  $file]);
+        if(!$result)
+            return my_json([],-1,"检测附件未通过");
+
+        //上传到服务器,
+        $path = Filesystem::disk('public_html')->putFile('upload',$file);
+
+        $reader = new Xlsx();
+        $spreadsheet = $reader->load($path);
+        $datas = $spreadsheet->getActiveSheet()->toArray();
+
+        //去掉标题
+        array_shift($datas);
+
+        //检测导入的数据,同时赋值
+        $re = $this->checkImportData($datas);
+
+        return my_json($re);
+    }
+    //检测批量数据,返回所有数据
+    protected function checkImportData($datas){
+        $re = [];
+        foreach($datas as $d)
+        {
+            $tmp = [
+                "name"  =>  $d[0],
+                "school"  =>  $d[1],
+                "course"  =>  $d[2],
+                "hour"  =>  $d[3],
+                "type"  =>  $d[4],
+                "money"  =>  $d[5],
+
+                "error" => 0,
+                "message" => ""
+            ];
+            //检测姓名
+            if(empty($tmp["name"]) || mb_strlen($tmp["name"]) > 20)
+            {
+                $tmp['error'] = 1;
+                $tmp['message'] = "姓名为空或者长度不能超过20个字符";
+            }
+            else
+            {
+                $student_model = \app\ins\model\Student::scope("ins_id")->where("name",$tmp["name"])->find();
+                if(!$student_model)
+                {
+                    $tmp['error'] = 1;
+                    $tmp['message'] = "未找到该学生";
+                }
+                $tmp['name_value'] = $student_model['id'];
+            }
+
+            //检测校区
+            if(!empty($tmp["school"]))
+            {
+                $school_model = School::scope("ins_id")->where("name",$tmp["school"])->find();
+                if(!$school_model)
+                {
+                    $tmp['error'] = 1;
+                    $tmp['message'] = "未找到校区数据";
+                }
+                $tmp['school_value'] = $school_model['id'];
+            }
+            else
+            {
+                $tmp['error'] = 1;
+                $tmp['message'] = "校区不能为空";
+            }
+
+            //检测课程
+            if(!empty($tmp['course']))
+            {
+                $course_model = \app\ins\model\Course::scope("ins_id")->where("name",$tmp['course'])->find();
+                if(!$course_model)
+                {
+                    $tmp['error'] = 1;
+                    $tmp['message'] = "未找到课程数据";
+                }
+                $tmp['course_value'] = $course_model['id'];
+            }
+            else
+            {
+                $tmp['error'] = 1;
+                $tmp['message'] = "课程不能为空";
+            }
+
+            //检测购买课时
+            if(!empty($tmp['hour']))
+            {
+                if(!is_numeric($tmp['hour']) || $tmp['hour'] <= 0)
+                {
+                    $tmp['error'] = 1;
+                    $tmp['message'] = "购买课时必须是大于0的数值";
+                }
+            }
+            else
+            {
+                $tmp['error'] = 1;
+                $tmp['message'] = "购买课时不能为空";
+            }
+
+            //检测课时类型
+            if(!empty($tmp["type"]))
+            {
+                $buy_type_model = BuyType::scope("ins_id")->where("name",$tmp['type'])->find();
+                if(!$buy_type_model)
+                {
+                    $tmp['error'] = 1;
+                    $tmp['message'] = "课时类型不存在";
+                }
+                $tmp['type_value'] = $buy_type_model['id'];
+            }
+
+            //检测金额
+            if(!empty($tmp['money']))
+            {
+                if (!preg_match('/^[0-9]+(.[0-9]{1,2})?$/', $tmp['money']))
+                {
+                    $tmp['error'] = 1;
+                    $tmp['message'] = "金额格式不正确";
+                }
+            }
+
+            $re[] = $tmp;
+        }
+
+        return $re;
+    }
+    //导入课时记录
+    public function importBuy(){
+        $list = input("post.list");
+
+        if(!is_array($list))
+            return my_json([],-1,"导入数据格式不正确");
+        if(empty($list))
+            return my_json([],-1,"导入数据不能为空");
+
+        $insert_data = [];
+        $filter_list = $this->filterImportData($list,"name");
+
+        foreach($filter_list as $key => $value)
+        {
+            if(!$value['error'])
+                $insert_data[] = [
+                    "ins_id"    =>  $this->ins_id,
+                    "school_id" =>  $value['school_value'],
+                    "course_id" =>  $value['course_value'],
+                    "student_id"    =>  $value['name_value'],
+                    "student_name"  =>  $value['name'],
+                    "buy_hour"  =>  $value['hour'],
+                    "type"  =>  $value['type_value'],
+                    "pay_money" =>  $value['money'],
+                    "add_time"  =>  time(),
+                    "uid"   =>  $this->uid
+                ];
+        }
+        $student_model = new CourseBuy();
+        $student_model->saveAll($insert_data);
+
+        return my_json();
+    }
+    //过滤批量数据,返回过滤后的数据
+    //$filter_key 按照哪个键去除重复值
+    protected function filterImportData($datas,$filter_key){
+        //根据$filter_key，过滤重复的值
+        $filter_list = [];
+
+        if($filter_key)
+        {
+            foreach($datas as $key => $value)
+            {
+                if(!empty($value[$filter_key]))
+                {
+                    $filter_list[trim($value[$filter_key],"")] = $value;
+                }
+            }
+        }
+        $filter_list = array_values($filter_list);
+        $re = [];
+        foreach($filter_list as $d)
+        {
+            $tmp = [
+                "name"  =>  $d['name'],
+                "school"    =>  $d['school'],
+                "course"    =>  $d['course'],
+                "hour"  =>  $d['hour'],
+                "type"  =>  $d['type'],
+                "money" =>  $d['money'],
+
+                "error" => 0,
+                "message" => ""
+            ];
+            //检测姓名
+            if(empty($tmp["name"]) || mb_strlen($tmp["name"]) > 20)
+            {
+                $tmp['error'] = 1;
+                $tmp['message'] = "姓名为空或者长度不能超过20个字符";
+            }
+            else
+            {
+                $student_model = \app\ins\model\Student::scope("ins_id")->where("name",$tmp["name"])->find();
+                if(!$student_model)
+                {
+                    $tmp['error'] = 1;
+                    $tmp['message'] = "未找到该学生";
+                }
+                $tmp['name_value'] = $student_model['id'];
+            }
+
+            //检测校区
+            if(!empty($tmp["school"]))
+            {
+                $school_model = School::scope("ins_id")->where("name",$tmp["school"])->find();
+                if(!$school_model)
+                {
+                    $tmp['error'] = 1;
+                    $tmp['message'] = "未找到校区数据";
+                }
+                $tmp['school_value'] = $school_model['id'];
+            }
+            else
+            {
+                $tmp['error'] = 1;
+                $tmp['message'] = "校区不能为空";
+            }
+
+            //检测课程
+            if(!empty($tmp['course']))
+            {
+                $course_model = \app\ins\model\Course::scope("ins_id")->where("name",$tmp['course'])->find();
+                if(!$course_model)
+                {
+                    $tmp['error'] = 1;
+                    $tmp['message'] = "未找到课程数据";
+                }
+                $tmp['course_value'] = $course_model['id'];
+            }
+            else
+            {
+                $tmp['error'] = 1;
+                $tmp['message'] = "课程不能为空";
+            }
+
+            //检测购买课时
+            if(!empty($tmp['hour']))
+            {
+                if(!is_numeric($tmp['hour']) || $tmp['hour'] <= 0)
+                {
+                    $tmp['error'] = 1;
+                    $tmp['message'] = "购买课时必须是大于0的数值";
+                }
+            }
+            else
+            {
+                $tmp['error'] = 1;
+                $tmp['message'] = "购买课时不能为空";
+            }
+
+            //检测课时类型
+            if(!empty($tmp["type"]))
+            {
+                $buy_type_model = BuyType::scope("ins_id")->where("name",$tmp['type'])->find();
+                if(!$buy_type_model)
+                {
+                    $tmp['error'] = 1;
+                    $tmp['message'] = "课时类型不存在";
+                }
+                $tmp['type_value'] = $buy_type_model['id'];
+            }
+
+            //检测金额
+            if(!empty($tmp['money']))
+            {
+                if (!preg_match('/^[0-9]+(.[0-9]{1,2})?$/', $tmp['money']))
+                {
+                    $tmp['error'] = 1;
+                    $tmp['message'] = "金额格式不正确";
+                }
+            }
+            $re[] = $tmp;
+        }
+
+        return $re;
     }
 }
