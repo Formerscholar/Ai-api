@@ -9,4 +9,21 @@ class Index
     {
         return view();
     }
+    public function abc(){
+        $data = [
+            [
+                "title" =>  "333",
+                "url"   =>  "/"
+            ],
+            [
+                "title" =>  "2222",
+                "url"   =>  "/"
+            ],
+            [
+                "title" =>  "2222",
+                "url"   =>  "/"
+            ],
+        ];
+        return json_encode($data);
+    }
 }
