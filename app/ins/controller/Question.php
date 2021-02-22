@@ -182,7 +182,7 @@ class Question extends Admin
         $curr_subject_ids = explode(",",$this->subject_ids);
         if(empty($this->subject_ids) || empty($curr_subject_ids))
             return my_json([],-1,"未设置老师科目信息");
-        $condition['subject'] = Subject::whereIn("id",$curr_subject_ids)->field("id,title")->orderRaw("field(id,".join(",",$curr_subject_ids).")")->select()->toArray();
+        $condition['subject'] = Subject::whereIn("id",$curr_subject_ids)->field("id,title")->order("sort asc")->select()->toArray();
 
         $default_subject_id = $this->subject_id;
         if(empty($default_subject_id))

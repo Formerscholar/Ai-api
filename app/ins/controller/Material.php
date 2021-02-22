@@ -87,10 +87,81 @@ class Material extends Admin{
     }
     //同步至本地
     public function syncToLocal(){
+        $post_data = input("post.");
+        validate(\app\ins\validate\Material::class)->scene("sync")->check($post_data);
 
+        $material_model = \app\ins\model\Material::where("sync_id",$post_data['id'])->where("uid",$this->uid)->find();
+        if($material_model)
+            return my_json([],-1,"该课件已经同步了");
+
+        $file_type = "";
+        if($post_data['suffix'] == 1)
+            $file_type = "WORD";
+        else if($post_data['suffix'] == 2)
+            $file_type = "PDF";
+        else if($post_data['suffix'] == 3)
+            $file_type = "PPT";
+
+        $insert_data = [
+            "ins_id"    =>  $this->ins_id,
+            "school_id" =>  $this->school_id,
+            "subject_id"    =>  $post_data['subject_id'],
+            "grade_id"    =>  $post_data['grade_id'],
+            "name"    =>  $post_data['name'],
+            "info"    =>  $post_data['desc'],
+            "file_src"    =>  $post_data['file_url'],
+            "file_type"    =>  $file_type,
+            "file_size"    =>  $post_data['size'],
+            "add_time"    =>  time(),
+            "uid"   =>  $this->uid,
+            "is_sync"   =>  1,
+            "sync_id"   =>  $post_data['id'],
+            "sync_time" =>  time()
+        ];
+
+        $material_model = \app\ins\model\Material::create($insert_data);
+        return my_json(["id"    =>  $material_model->id],0,"同步成功");
     }
     //详情
     public function detail(){
+
+    }
+
+    //我的课件
+    public function my(){
+        $page = input("get.page",1,"int");
+        $limit = input("get.limit",10,"int");
+        $keyword = input("get.keyword","");
+        $subject_id   = input("get.subject_id",0,"int");
+        $grade_id   = input("get.grade_id",0,"int");
+
+        //更新用户当前科目id
+        if($this->subject_id != $subject_id)
+        {
+            $this->subject_id = $subject_id;
+            User::update(["current_subject_id"  =>  $subject_id],["id" =>  $this->uid]);
+        }
+
+        $where[] = ["ins_id","=",$this->ins_id];
+        $where[] = ['is_delete','=',0];
+        if($keyword)
+            $where[] = ['name','like',"%{$keyword}%"];
+
+        if($subject_id)
+            $where[] = ['subject_id','=',$subject_id];
+        if($grade_id)
+            $where[] = ['grade_id','=',$grade_id];
+
+        $list = \app\ins\model\Material::get_page($where,"*","id DESC",$page,$limit);
+
+        return my_json($list);
+    }
+    //上传课件
+    public function upload(){
+
+    }
+    //删除我的课件
+    public function delete(){
 
     }
 }

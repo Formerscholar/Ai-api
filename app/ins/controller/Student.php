@@ -231,24 +231,6 @@ class Student extends Admin{
         if($start_time && $end_time && $start_time < $end_time)
             $where[] = ['add_time','between',[$start_time,$end_time]];
 
-        //按题目类型统计
-//        $result = StudentResult::where($where)->fieldRaw("question_type,count(*) as count")->group("question_type")->select()->toArray();
-//        $total_count = StudentResult::where($where)->count();
-//        $type_list = QuestionCategory::getTypeList(array_column($result,"question_type"));
-//
-//        $re = [];
-//        $re['title'] = "学情报告";
-//        $re['xAxis'] = [];
-//        $re['yAxis'] = [];
-//        foreach($result as $item)
-//        {
-//            $re['xAxis'][] = $type_list[$item['question_type']]['title'];
-//            $re['yAxis'][] = [
-//                "value" =>  bcdiv($item['count'],$total_count,2),
-//                "name"  =>  $type_list[$item['question_type']]['title'],
-//            ];
-//        }
-
         //按知识点统计
         $total_count = StudentResult::where($where)->count();
         $know_point_ids = StudentResult::where($where)->column("question_know_point");

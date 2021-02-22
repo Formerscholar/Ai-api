@@ -213,14 +213,18 @@ class Block extends Admin{
         $limit = input("get.limit",10,"int");
         $keyword = input("get.keyword","");
         $school_id = request()->get("school_id",0,"int");
+        $team_id = request()->get("team_id",0,"int");
 
         $where = [];
         if($keyword)
             $where[] = ['name|mobile','like',"%{$keyword}%"];
         if($school_id)
             $where[] = ["school_id","=",$school_id];
+        if($team_id)
+            $where[] = ["team_ids","find in set",$team_id];
 
-        return my_json(Student::scope("ins_id")->where($where)->field("id,name")->page($page)->limit($limit)->select());
+        $re = Student::scope("ins_id")->where($where)->field("id,name")->page($page)->limit($limit)->select()->toArray();
+        return my_json($re);
     }
     //获得班级列表
     public function getTeamList(){
