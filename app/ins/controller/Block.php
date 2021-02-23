@@ -9,6 +9,7 @@
 namespace app\ins\controller;
 
 //公共接口
+use aictb\Api;
 use app\ins\model\Area;
 use app\ins\model\BuyType;
 use app\ins\model\Course;
@@ -45,14 +46,40 @@ class Block extends Admin{
     public function getAllRole(){
         return my_json(Role::get_all([],"id,name"));
     }
-    //通过年级获得知识点列表
+    //获得章节列表
+    public function getChapterList(){
+        $subject_id = input("get.subject_id",0,"int");
+        $grade_id = input("get.grade_id",0,"int");
+
+        $ins_data = Institution::where("id",$this->ins_id)->field("province,city")->find();
+        $ctb = new Api();
+        $result = $ctb->getChapter([
+            "subject_id"    =>  $subject_id,
+            "grade_id"  =>  $grade_id,
+            "province_id"   =>  $ins_data['province'],
+            "city_id"   =>  $ins_data['city'],
+            "semester"  =>  get_semester()
+        ]);
+
+        if($result === false)
+            return my_json([],-1,$ctb->getError());
+
+        $re = [];
+        foreach($result as $item)
+        {
+            $re[] = [
+                "id"    =>  $item['id'],
+                "title" =>  $item['title'],
+                "pid"   =>  $item['parent_id']
+            ];
+        }
+
+        return my_json($re);
+    }
+    //获得知识点列表
     public function getKnowledgeByGradIds(){
         $subject_id = input("get.subject_id",0,"int");
-        $grade_ids = input("get.grade_ids");
-
-        $where_know = [
-            ["subject_id","=",$subject_id]
-        ];//知识点
+        $grade_id = input("get.grade_id",0,"int");
 
         $curr_grade_ids = current(Institution::where("id",$this->ins_id)->column("grade_ids"));
         if(empty($curr_grade_ids))
@@ -60,22 +87,29 @@ class Block extends Admin{
 
         $curr_grade_ids = explode(",",$curr_grade_ids);
 
-        if(empty($grade_ids) || !is_array($grade_ids))
-            $grade_ids = $curr_grade_ids;
+        if(!in_array($grade_id,$curr_grade_ids))
+            return my_json([],-1,"该年级尚未开通");
 
-        $grade_ids = array_values(array_intersect($grade_ids,$curr_grade_ids));
-        $where_grade = [];
-        if($grade_ids && is_array($grade_ids))
+        $ctb = new Api();
+        $result = $ctb->getKnowledge([
+            "subject_id"    =>  $subject_id,
+            "grade_id"  =>  $grade_id
+        ]);
+        if($result === false)
+            return my_json([],-1,$ctb->getError());
+        $re = [];
+        foreach($result as $item)
         {
-            foreach($grade_ids as $v)
-                $where_grade[] = "FIND_IN_SET({$v},grade_id)";
+            $re[] = [
+                "id"    =>  $item['id'],
+                "name"  =>  $item['name'],
+                "code"  =>  $item['code'],
+                "title" =>  $item['title'],
+                "pid"   =>  $item['pid']
+            ];
         }
 
-        $knowledge_model = Knowledge::where($where_know)->where(join(' OR ', $where_grade))->field('id,name,code,title,pid')->order('sort','asc')->select();
-        if(!$knowledge_model)
-            return my_json([]);
-//        echo Knowledge::getLastsql();exit;
-        return my_json($knowledge_model->toArray());
+        return my_json($re);
     }
     //通过科目获得题型列表
     public function getTypeBySubjectId(){

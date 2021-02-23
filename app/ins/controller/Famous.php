@@ -50,7 +50,7 @@ class Famous extends Admin{
         $api = new Api();
         $re = $api->getFamousCategory();
         $condition['category'] = [];
-        if($re['code'] != -1)
+        if($re !== false)
             $condition['category'] = $re;
 
         return my_json($condition);
@@ -70,7 +70,7 @@ class Famous extends Admin{
 
         $api = new Api();
         $re = $api->getFamousList($params);
-        if(!$re)
+        if($re === false)
             return my_json([],-1,$api->getError());
         //验证是否已经同步至我的试卷
         if(!empty($re['data']))

@@ -7,6 +7,8 @@
  */
 namespace aictb;
 
+use think\exception\ValidateException;
+
 class Api{
     protected $baseUrl = "http://api2.aictb.com";
     protected $token = "ed08cf3bda2290f5f69fd3805ba3dfd8";
@@ -210,5 +212,78 @@ class Api{
         $url = "/pyzs/getExercisesDetail";
 
         return $this->getData($url,$p);
+    }
+
+    //获取知识点
+    public function getKnowledge($params = []){
+        $url = "/pyzs/getKnowledge";
+        try {
+            validate([
+                "subject_id"    =>  "require",
+                "grade_id"  =>  "require",
+            ],[])->check($params);
+        }catch (ValidateException $e){
+            $this->error = $e->getError();
+            return false;
+        }
+
+        return $this->getData($url,$params);
+    }
+
+    //获得章节
+    public function getChapter($params = [])
+    {
+        $url = "/pyzs/getChapter";
+        try {
+            validate([
+                "subject_id"    =>  "require",
+                "grade_id"  =>  "require",
+                "province_id"  =>  "require",
+                "city_id"  =>  "require",
+                "semester"  =>  "in:1,2"
+            ],[])->check($params);
+        }catch (ValidateException $e){
+            $this->error = $e->getError();
+            return false;
+        }
+
+        return $this->getData($url,$params);
+    }
+
+    //获得题型
+    public function getQuestionCategory($params = []){
+        $url = "/pyzs/getSubjectQuestionCategory";
+
+        try {
+            validate([
+                "subject_id"    =>  "require",
+            ],[])->check($params);
+        }catch (ValidateException $e){
+            $this->error = $e->getError();
+            return false;
+        }
+
+        return $this->getData($url,$params);
+    }
+
+    //获得题目列表
+    public function getQuestionList($params = []){
+        $url = "/pyzs/getExercises";
+        try {
+            validate([
+                "subject_id"    =>  "require",
+                "grade_id"    =>  "require",
+                "type"    =>  "number",
+                "level" =>  "number",
+                "title" =>  "max:20",
+                "knowledge_id"    =>  "array",
+                "chapter_id"    =>  "array",
+            ],[])->check($params);
+        }catch (ValidateException $e){
+            $this->error = $e->getError();
+            return false;
+        }
+
+        return $this->getData($url,$params);
     }
 }

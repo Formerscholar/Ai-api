@@ -183,3 +183,12 @@ function fetch_array_value($array, $key)
 
     return $data;
 }
+
+//返回上学期or下学期
+function get_semester(){
+    $month = intval(date("m"));
+    if(in_array($month,[9,10,11,12,1]))
+        return 1;
+    else
+        return 2;
+}

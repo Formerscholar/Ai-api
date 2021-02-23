@@ -188,7 +188,7 @@ class Report extends Admin{
         {
             $ctb = new Api();
             $result = $ctb->getExercisesDetail(["ids" => array_unique($question_ids)]);
-            if(!$result)
+            if($result === false)
                 return my_json([],-1,$ctb->getError());
             $result = array_column($result,null,"id");
         }

@@ -3,6 +3,7 @@ declare (strict_types = 1);
 
 namespace app\ins\controller;
 
+use aictb\Api;
 use app\BaseController;
 use app\ins\model\Basket;
 use app\ins\model\Grade;
@@ -77,22 +78,60 @@ class Question extends Admin
             return my_json([],-1,"未设置机构开通班级");
 
         $curr_grade_ids = explode(",",$curr_grade_ids);
-        if($data['grade'])
-        {
-            if(!is_array($data['grade']))
-                return my_json([],-1,"年级必须是数组");
-
-            $data['grade'] = array_values(array_intersect($data['grade'],$curr_grade_ids));
-        }
+        if(!in_array($data['grade'],$curr_grade_ids))
+            return my_json([],-1,"该年级尚未开通");
 
         if(empty($data['knowledge']) || !is_array($data['knowledge']))
         {
             $data['knowledge'] = [];
         }
 
+        if(empty($data['chapter']) || !is_array($data['chapter']))
+        {
+            $data['chapter'] = [];
+        }
+
         //搜索条件验证完毕
 
         //查询
+        $ctb = new Api();
+        $result = $ctb->getQuestionList([
+            "subject_id"    =>  $data['subject'],
+            "grade_id"  =>  $data['grade'],
+            "type"  =>  $data['type'],
+            "level"  =>  $data['level'],
+            "title" =>  $data['keyword'],
+            "knowledge_id"  =>  $data['knowledge'],
+            "chapter_id"    =>  $data['chapter']
+        ]);
+        if($result === false)
+            return my_json([],-1,$ctb->getError());
+        //处理接口数据
+        $question_page = [
+            "count" =>  $result['total'],
+            "total_page"    =>  $result['last_page'],
+            "page"  =>  $page,
+            "list"  =>  [],
+        ];
+        foreach($result['data'] as $item)
+        {
+            $question_page['list'][] = [
+                "id"    =>  $item['id'],
+                "level" =>  $item['level'],
+                "type"  =>  isset($item['get_question_category']) ? $item['get_question_category']['id']:"",
+                "type_name" =>  isset($item['get_question_category']) ? $item['get_question_category']['title']:"",
+            ];
+        }
+
+
+
+
+
+
+
+
+
+
         $where_question = [
             ["subject_id","=",$data['subject']]
         ];//题目
@@ -105,7 +144,7 @@ class Question extends Admin
         {
             $where_question[] = ['level','=',$data['level']];
         }
-        //grade、knowledge 均为数组格式
+        //chapter、knowledge仅存在一个且均为数组格式
         if($data['grade'])
             $where_question[] = ['grade_id','in',$data['grade']];
         else
@@ -174,6 +213,8 @@ class Question extends Admin
     }
     //获得题目列表的搜索条件
     public function getSearchCondition(){
+        $source_type = input("get.source_type",0,"int");
+
         //查询条件
         $condition = [];
 
@@ -193,6 +234,7 @@ class Question extends Admin
         if(empty($curr_grade_ids))
             return my_json([],-1,"未设置机构开通班级");
 
+        //年级
         $curr_grade_ids = explode(",",$curr_grade_ids);
         $condition['grade'] = Grade::get_all([
             ['is_enable','=',1],
@@ -200,27 +242,42 @@ class Question extends Admin
             ["id","in",$curr_grade_ids],
         ],"id,name","sort ASC");//年级
 
-        $question_category_list = QuestionCategory::where([
-            ["is_enable","=",1],
-            ["is_delete","=",0],
-            ["subject_ids","find in set",$default_subject_id]
-        ])->field("id,title")->select();
         //题型
-        if($question_category_list)
-            $condition['type'] = $question_category_list->toArray();
-        else
-            $condition['type'] = [];
+        $ctb = new Api();
+        $result = $ctb->getQuestionCategory([
+            "subject_id"    =>  $default_subject_id
+        ]);
+        if($result === false)
+            return my_json([],-1,$ctb->getError());
+        $condition['type'] = $result;
 
-        //知识点
-        $where_grade = [];
-        foreach($curr_grade_ids as $v)
-            array_push($where_grade,"FIND_IN_SET({$v},grade_id)");
-
-        $knowledge_model = Knowledge::where("subject_id",$default_subject_id)->where(join(' OR ', $where_grade))->field('id,name,code,title,pid')->order('sort','asc')->select();
-        if($knowledge_model)
-            $condition['knowledge'] = $knowledge_model->toArray();
+        if($source_type)
+        {
+            //知识点
+            $result = $ctb->getKnowledge([
+                "subject_id"    =>  $default_subject_id,
+                "grade_id"  =>  $curr_grade_ids[0]
+            ]);
+            if($result === false)
+                return my_json([],-1,$ctb->getError());
+            $condition['knowledge'] = $result;
+        }
         else
-            $condition['knowledge'] = [];
+        {
+            //章节
+            $ins_data = Institution::where("id",$this->ins_id)->field("province,city")->find();
+            $result = $ctb->getChapter([
+                "subject_id"    =>  $default_subject_id,
+                "grade_id"  =>  $curr_grade_ids[0],
+                "province_id"   =>  $ins_data['province'],
+                "city_id"   =>  $ins_data['city'],
+                "semester"  =>  get_semester()
+            ]);
+            if($result === false)
+                return my_json([],-1,$ctb->getError());
+
+            $condition['chapter'] = $result;
+        }
 
         return my_json($condition);
     }
