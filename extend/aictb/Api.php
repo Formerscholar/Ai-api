@@ -11,6 +11,8 @@ class Api{
     protected $baseUrl = "http://api2.aictb.com";
     protected $token = "ed08cf3bda2290f5f69fd3805ba3dfd8";
     protected $error = "";
+    protected $cache = true;
+    protected $cacheTime = 300;//缓存时间，5分钟
 
     public function __construct($config=[])
     {
@@ -47,9 +49,11 @@ class Api{
         $result = curl_exec($ch);
 
         if($error=curl_error($ch)){
-            return $error;
+            $this->error = $error;
+            return false;
         }
         curl_close($ch);
+
         return json_decode($result,true);
     }
     protected function curl_post($url,$data=[]){
@@ -84,19 +88,62 @@ class Api{
         return json_decode($result,true);
     }
 
-    protected function getData($data){
-        if(!isset($data['code']))
-        {
-            $this->error = "未知错误";
-            return false;
-        }
-        if($data['code'] != 200)
-        {
-            $this->error = empty($data['msg'])?"远程接口调用失败":$data['msg'];
-            return false;
-        }
+    protected function setCache($key,$value){
+        return cache($key,$value,$this->cacheTime);
+    }
+    protected function getCache($key){
+        return cache($key);
+    }
+    protected function getCacheKey($url,$params=[]){
+        $api_url = $this->baseUrl.$url;
+        $params['token'] = $this->token;
+        $api_url .= "?".http_build_query($params);
 
-        return $data['data'];
+        return md5($api_url);
+    }
+    protected function getData($url,$params = [],$method="get")
+    {
+        if(!$url)
+        {
+            $this->error = "url不能为空";
+            return false;
+        }
+        if($this->cache)
+        {
+            $data = $this->getCache($this->getCacheKey($url,$params));
+        }
+        if(isset($data) && $data)
+        {
+            return $data;
+        }
+        else
+        {
+            if($method == "get")
+                $data = $this->curl_get($url,$params);
+            else
+                $data = $this->curl_post($url,$params);
+
+            if(!$data)
+                return false;
+
+            if(!isset($data['code']))
+            {
+                $this->error = "未知错误";
+                return false;
+            }
+            if($data['code'] != 200)
+            {
+                $this->error = empty($data['msg'])?"远程接口调用失败":$data['msg'];
+                return false;
+            }
+
+            if($this->cache)
+            {
+                $this->setCache($this->getCacheKey($url,$params),$data['data']);
+            }
+
+            return $data['data'];
+        }
     }
 
     public function getError(){
@@ -106,7 +153,7 @@ class Api{
     //获得名校试卷分类
     public function getFamousCategory(){
         $url = "/pyzs/getBasedCategory";
-        return $this->getData($this->curl_get($url));
+        return $this->getData($url);
     }
 
     //获得名校试卷列表
@@ -132,7 +179,7 @@ class Api{
         $p['page'] = isset($params['page']) && $params['page'] > 1 ?intval($params['page']):1;
 
         $url = "/pyzs/getSchoolResourcesList";
-        return $this->getData($this->curl_get($url,$p));
+        return $this->getData($url,$p);
     }
 
     //获得课件列表
@@ -150,6 +197,18 @@ class Api{
 
         $url = "/pyzs/coursewareList";
 
-        return $this->getData($this->curl_get($url,$p));
+        return $this->getData($url,$p);
+    }
+
+    //获得题目详情
+    public function getExercisesDetail($params = []){
+        $p = [
+            "exercises_id"    =>  [],
+        ];
+        $p['exercises_id'] = $params['ids'];
+
+        $url = "/pyzs/getExercisesDetail";
+
+        return $this->getData($url,$p);
     }
 }
