@@ -13,6 +13,7 @@ use app\ins\model\Institution;
 use app\ins\model\LocalGrade;
 use app\ins\model\LocalSubject;
 use app\ins\model\Paper;
+use app\ins\model\PaperQuestion;
 use app\ins\model\Student;
 use app\ins\model\StudentResult;
 use app\ins\model\StudentStudy;
@@ -94,6 +95,76 @@ class Famous extends Admin{
     }
     //同步至本地试卷库
     public function syncToLocal(){
+        $sync_id = input("post.sync_id",0,"int");
+
+        $ctb = new Api();
+        $result = $ctb->getSchoolResourcesDetail([
+            "exams_id"  =>  $sync_id
+        ]);
+        if($result === false)
+            return my_json([],-1,$ctb->getError());
+
+        $paper_exist = Paper::scope("ins_id")->where("uid",$this->uid)->where("is_famous",1)->where("famous_id",$sync_id)->count();
+        if($paper_exist)
+            return my_json([],-1,"该试卷已经同步过了");
+
+        $insert_paper_data = [
+            "ins_id"    =>  $this->ins_id,
+            "subject_id"    =>  $result['exams']['subject_id'],
+            "title" =>  $result['exams']['title'],
+            "uid"   =>  $this->uid,
+            "is_famous" =>  1,
+            "famous_id" =>  $sync_id,
+            "add_time"  =>  time(),
+            "sync_time" =>  time()
+        ];
+        $insert_paper_question_data = [];
+        foreach($result['examsExercisesList'] as $item){
+            $insert_paper_question_data[] = [
+                "parent_id"  =>  $item['parent_id'],
+                "question_id"   =>  $item['exercises_id'],
+                "add_time"  =>  time(),
+                "score" =>  $item['score'],
+                "title" =>  $item['title'],
+//                "paper_id"
+//                "sort"
+            ];
+        }
+        \think\facade\Db::startTrans();
+        try {
+            //插入试卷数据
+            $paper_model = \app\ins\model\Paper::create($insert_paper_data);
+            foreach($insert_paper_question_data as $key => $val)
+            {
+                $insert_paper_question_data[$key]['paper_id'] = $paper_model->id;
+            }
+            //插入试卷题目关系数据
+            $paper_question_model = new PaperQuestion();
+            $insert_list = $paper_question_model->saveAll($insert_paper_question_data)->toArray();
+            if(!empty($insert))
+            {
+                $insert_ids = array_column($insert_list,"id");
+                $update_data = [];
+                foreach($insert_ids as $id)
+                {
+                    $update_data[] = [
+                        "id"    =>  $id,
+                        "sort"  =>  $id,
+                    ];
+                }
+                $paper_question_model->saveAll($update_data);
+            }
+
+            // 提交事务
+            \think\facade\Db::commit();
+
+            return my_json([],0,"操作成功");
+        } catch (\Exception $e) {
+            // 回滚事务
+            \think\facade\Db::rollback();
+
+            return my_json([],-1,$e->getMessage());
+        }
 
     }
     //试卷详情

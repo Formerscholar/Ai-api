@@ -18,6 +18,7 @@ use app\ins\model\StudentResult;
 use app\ins\model\StudentStudy;
 use app\ins\model\User;
 use app\Request;
+use think\facade\Filesystem;
 
 class Material extends Admin{
     //获得搜索条件
@@ -156,12 +157,81 @@ class Material extends Admin{
 
         return my_json($list);
     }
-    //上传课件
+    //上传课件附件
     public function upload(){
+        $file = request()->file('file');
+        if(empty($file))
+            return my_json([],-1,"未检测到上传文件");
 
+        validate([
+            'file'  =>  'fileSize:102400|fileExt:pdf,doc,docx,ppt'
+        ])->check(["file"   =>  $file]);
+
+        //上传到服务器,
+        $path = Filesystem::disk('public_html')->putFile('upload',$file);
+
+        $file_src = Filesystem::getDiskConfig('public_html','url').'/'.str_replace('\\','/',$path);
+
+        //获取图片名称
+        $fileName = $file->getOriginalName();
+
+        return my_json(["file_name" => $fileName,"file_src" =>  $file_src]);
+
+        return my_json();
+    }
+    //添加教案
+    public function add(){
+        $post_data = input("post.");
+
+        validate(\app\ins\validate\Material::class)->scene("add")->check($post_data);
+
+        $file = current($post_data['files']);
+        if(empty($file) && $file['status'] == "success")
+            return my_json([],-1,"附件不能为空");
+        $pathinfo = pathinfo($file['url']);
+        if(strtolower($pathinfo['extension']) == "doc" || strtolower($pathinfo['extension']) == "docx")
+            $file_type = "WORD";
+        else if(strtolower($pathinfo['extension']) == "pdf")
+            $file_type = "PDF";
+        else if(strtolower($pathinfo['extension']) == "ppt")
+            $file_type = "ppt";
+
+
+        $insert_data = [
+            "ins_id"    =>  $this->ins_id,
+            "school_id" =>  $this->school_id,
+            "subject_id"    =>  $post_data['subject_id'],
+            "grade_id"  =>  $post_data['grade_id'],
+            "name"  =>  $post_data['name'],
+            "file_src"  =>  $file['url'],
+            "file_type" =>  $file_type,
+            "file_size" =>  "",
+            "add_time"  =>  time(),
+            "uid"   =>  $this->uid,
+        ];
     }
     //删除我的课件
     public function delete(){
+        $id = input("get.id");
 
+        if($id && !is_array($id))
+            $id = [$id];
+        if(empty($id))
+            return my_json([],-1,"未选择要删除的数据");
+
+        $model = new \app\ins\model\Material();
+        $batch_data = [];
+        foreach($id as $i)
+        {
+            if($i)
+                $batch_data[] = [
+                    "id"    =>  $i,
+                    "is_delete" => 1,
+                    "delete_time" => time()
+                ];
+        }
+        $model->saveAll($batch_data);
+
+        return my_json([],0,"删除成功");
     }
 }

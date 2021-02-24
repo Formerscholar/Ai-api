@@ -19,6 +19,8 @@ class Material extends Validate{
         "desc"  =>  "max:200",
         "file_url"  =>  "require",
         "suffix"    =>  "in:1,2",
+
+        "files" =>  "require|array"
     ];
     protected $message  =   [
 
@@ -30,5 +32,10 @@ class Material extends Validate{
     public function sceneSync()
     {
         return $this->only(['id','subject_id','grade_id','name','desc','file_url','suffix']);
+    }
+    //添加
+    public function sceneAdd()
+    {
+        return $this->only(['subject_id','grade_id','name',"files"]);
     }
 }

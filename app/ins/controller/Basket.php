@@ -9,6 +9,7 @@ namespace app\ins\controller;
 
 //组卷篮
 
+use aictb\Api;
 use app\ins\model\Base;
 use app\ins\model\Knowledge;
 use app\ins\model\Paper;
@@ -151,10 +152,14 @@ class Basket extends Admin{
             ])->count() >= config("my.basket_max_question"))
             return my_json([],-1,"一份试卷最多".config("my.basket_max_question")."道试题，请重新加载组卷篮");
 
-        $question_model = Question::find($id);
-        if(!$question_model || $question_model['is_delete'])
-            return my_json([],-1,"题目数据不存在");
+        $ctb = new Api();
+        $result = $ctb->getQuestionDetail([
+            "exercises_id"  =>  [$id]
+        ]);
+        if($result === false || !current($result))
+            return my_json([],-1,$ctb->getError());
 
+        $result = current($result);
         if(\app\ins\model\Basket::where([
                 "uid"   =>  $this->uid,
                 "subject_id"   =>  $this->subject_id,
@@ -162,17 +167,13 @@ class Basket extends Admin{
             ])->count() > 0)
             return my_json([],-1,"组卷栏中已经存在该题目");
 
-        $type_model = QuestionCategory::find($question_model['type']);
-        if(!$type_model)
-            return my_json([],-1,"题目类型为空");
-
         $model = \app\ins\model\Basket::create([
             "uid"   =>  $this->uid,
             "subject_id"   =>  $this->subject_id,
             "question_id"   =>  $id,
-            "type"  =>  $question_model['type'],
-            "level" =>  $question_model['level'],
-            "score" =>  $type_model['score'],
+            "type"  =>  $result['type'],
+            "level" =>  $result['level'],
+            "score" =>  $result['score'],
             "add_time"  =>  time(),
         ]);
         \app\ins\model\Basket::update(["sort"   =>  $model->id],["id"  =>  $model->id]);

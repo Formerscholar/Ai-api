@@ -205,9 +205,8 @@ class Api{
     //获得题目详情
     public function getExercisesDetail($params = []){
         $p = [
-            "exercises_id"    =>  [],
+            "exercises_id"    =>  $params['exercises_id'],
         ];
-        $p['exercises_id'] = $params['ids'];
 
         $url = "/pyzs/getExercisesDetail";
 
@@ -278,6 +277,37 @@ class Api{
                 "title" =>  "max:20",
                 "knowledge_id"    =>  "array",
                 "chapter_id"    =>  "array",
+            ],[])->check($params);
+        }catch (ValidateException $e){
+            $this->error = $e->getError();
+            return false;
+        }
+
+        return $this->getData($url,$params);
+    }
+    //获得题目详情
+    public function getQuestionDetail($params = []){
+        $url = "/pyzs/getExercisesDetail";
+
+        try {
+            validate([
+                "exercises_id"    =>  "require|array",
+            ],[])->check($params);
+        }catch (ValidateException $e){
+            $this->error = $e->getError();
+            return false;
+        }
+
+        return $this->getData($url,$params);
+    }
+    //获得名校试卷详情
+    public function getSchoolResourcesDetail($params = [])
+    {
+        $url = "/pyzs/getSchoolResourcesDetail";
+
+        try {
+            validate([
+                "exams_id"    =>  "require",
             ],[])->check($params);
         }catch (ValidateException $e){
             $this->error = $e->getError();

@@ -3,6 +3,7 @@ declare (strict_types = 1);
 
 namespace app\ins\controller;
 
+use aictb\Api;
 use app\BaseController;
 use app\ins\model\Basket;
 use app\ins\model\Knowledge;
@@ -258,7 +259,13 @@ class Paper extends Admin
 
         $local_question_list = PaperQuestion::where("paper_id",$paper_id)->order('id','asc')->select()->toArray();
         $question_ids = array_column($local_question_list,"question_id");
-        $server_question_list = Question::where("id","in",$question_ids)->orderRaw("field(id,".join(",",$question_ids).")")->select()->toArray();
+        $ctb = new Api();
+        $server_question_list = $ctb->getExercisesDetail([
+            "exercises_id"  =>  array_filter($question_ids)
+        ]);
+        if($server_question_list === false)
+            return my_json([],-1,$ctb->getError());
+
         $server_question_list = array_column($server_question_list,null,"id");
         foreach($local_question_list as $key => $val)
         {
@@ -266,7 +273,8 @@ class Paper extends Admin
                 $local_question_list[$key]['question_data'] = $server_question_list[$val['question_id']];
         }
         $re['questions'] = $local_question_list;
-        /*试卷分析*/
+
+         /*试卷分析*/
         $countScore = 0;
         $generalAnalysis = array();//总分析
         $typeAnalysis = array();//题量分析
@@ -298,17 +306,13 @@ class Paper extends Admin
                 } else {
                     $re['questions'][$k]['question_data']['knowName'] = '';
                 }
-                if(($v['question_data']['type'] == 59 || $v['question_data']['type'] == 23) && $v['question_data']['option_num'] != 1){
-                    $contentsAll = $this->getContentAll($v['question_data']['id'],$v['question_data']['content'],$v['question_data']['option_num']);
-                    $re['questions'][$k]['question_data']['content_all'] = $contentsAll;
-                }
                 if(isset($typeAnalysis[$v['question_data']['type']])){
                     $typeAnalysis[$v['question_data']['type']][0] = $typeAnalysis[$v['question_data']['type']][0] + 1;
                     $typeAnalysis[$v['question_data']['type']][2] = $typeAnalysis[$v['question_data']['type']][2] + $v['score'];
                 } else {
                     $typeAnalysis[$v['question_data']['type']][0] = 1;
                     $type = QuestionCategory::find($v['question_data']['type']);
-                    $typeAnalysis[$v['question_data']['type']][1] = $type->title;
+                    $typeAnalysis[$v['question_data']['type']][1] = $type['title'];
                     $typeAnalysis[$v['question_data']['type']][2] = $v['score'];
                 }
                 if(isset($levelAnalysis[$v['question_data']['level']])){
@@ -337,7 +341,6 @@ class Paper extends Admin
         $re['typeAnalysis'] = array_merge($typeAnalysis);
         $re['levelAnalysi'] = array_merge($levelAnalysis);
         $re['knowAnalysis'] = array_merge($knowAnalysis);
-
 
         return my_json($re);
     }

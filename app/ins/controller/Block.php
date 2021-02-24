@@ -8,7 +8,7 @@
 
 namespace app\ins\controller;
 
-//公共接口
+//公共接口r
 use aictb\Api;
 use app\ins\model\Area;
 use app\ins\model\BuyType;
@@ -16,6 +16,7 @@ use app\ins\model\Course;
 use app\ins\model\Grade;
 use app\ins\model\Institution;
 use app\ins\model\Knowledge;
+use app\ins\model\LocalGrade;
 use app\ins\model\Paper;
 use app\ins\model\PaperQuestion;
 use app\ins\model\Question;
@@ -30,6 +31,12 @@ use app\ins\model\User;
 use think\facade\Filesystem;
 
 class Block extends Admin{
+
+    //获得所有年级列表
+    public function getAllGrade(){
+        $re = LocalGrade::field("id,name")->select()->toArray();
+        return my_json($re);
+    }
 
     //获得老师负责的班级列表
     public function getAllTeacherTeam(){

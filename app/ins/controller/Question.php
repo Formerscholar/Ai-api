@@ -20,7 +20,7 @@ class Question extends Admin
     //题目列表
     public function index(){
         //过滤前端传递参数
-        $data = request()->only(["subject","type","level","grade","knowledge","keyword"]);
+        $data = request()->only(["subject","type","level","grade","knowledge","chapter","keyword"]);
         $page = input("get.page",1,"int");
         $limit = input("get.limit",10,"int");
 
@@ -102,8 +102,10 @@ class Question extends Admin
             "level"  =>  $data['level'],
             "title" =>  $data['keyword'],
             "knowledge_id"  =>  $data['knowledge'],
-            "chapter_id"    =>  $data['chapter']
+            "chapter_id"    =>  $data['chapter'],
+            "page"  =>  $page
         ]);
+
         if($result === false)
             return my_json([],-1,$ctb->getError());
         //处理接口数据
@@ -111,103 +113,18 @@ class Question extends Admin
             "count" =>  $result['total'],
             "total_page"    =>  $result['last_page'],
             "page"  =>  $page,
-            "list"  =>  [],
+            "list"  =>  $result['data'],
         ];
-        foreach($result['data'] as $item)
-        {
-            $question_page['list'][] = [
-                "id"    =>  $item['id'],
-                "level" =>  $item['level'],
-                "type"  =>  isset($item['get_question_category']) ? $item['get_question_category']['id']:"",
-                "type_name" =>  isset($item['get_question_category']) ? $item['get_question_category']['title']:"",
-            ];
-        }
-
-
-
-
-
-
-
-
-
-
-        $where_question = [
-            ["subject_id","=",$data['subject']]
-        ];//题目
-
-        if($data['type'])
-        {
-            $where_question[] = ["type",'=',$data['type']];
-        }
-        if($data['level'])
-        {
-            $where_question[] = ['level','=',$data['level']];
-        }
-        //chapter、knowledge仅存在一个且均为数组格式
-        if($data['grade'])
-            $where_question[] = ['grade_id','in',$data['grade']];
-        else
-            $where_question[] = ['grade_id','in',$curr_grade_ids];
-
-        $where_knowledge = [];
-        if($data['knowledge'])
-        {
-            foreach($data['knowledge'] as $v)
-                $where_knowledge[] = "FIND_IN_SET({$v},know_point)";
-        }
-
-        $where_keyword = [];
-        if($data['keyword'])
-        {
-            if(is_array($data['keyword']))
-            {
-                $where_keyword[] = ["content_text|content|content_all","like",$data['keyword'],'or'];
-            }
-            else
-            {
-                $where_keyword[] = ["content_text|content|content_all","like","%{$data['keyword']}%"];
-            }
-        }
-
-        $query = \app\ins\model\Question::where($where_question)->where(join(' OR ', $where_knowledge))->where($where_keyword);
-        $question_page = [];
-        $question_page['count'] = $query->count();
-        $question_page['total_page'] = ceil($question_page['count']/$limit);
-        $question_page['page'] = $page;
-        $question_page['list'] = $query->page($page)->limit($limit)->select()->toArray();
 
         //检测是否已经添加到组卷栏中
         $basket_question_ids = Basket::getQuestionIds($this->uid,$this->subject_id);
-        //题型
-        $question_types = array_column($question_page['list'],"type");
-        $question_type_list = QuestionCategory::where("id","in",$question_types)->field("id,title")->select()->toArray();
-        if(!empty($question_type_list))
-            $question_type_list = array_column($question_type_list,null,"id");
-        //知识点
-        $question_know_point_ids = array_column($question_page['list'],"know_point");
-        $question_know_point_list = Knowledge::get_all(["id" => array_filter(array_unique(explode(",",join(",",$question_know_point_ids))))],"id,title");
-        if($question_know_point_list)
-            $question_know_point_list = array_column($question_know_point_list,null,"id");
+
         foreach($question_page['list'] as $key => $val)
         {
             if(in_array($val['id'],$basket_question_ids))
                 $question_page['list'][$key]['has_add_basket'] = 1;
             else
                 $question_page['list'][$key]['has_add_basket'] = 0;
-
-            $question_page['list'][$key]['type_name'] = isset($question_type_list[$val['type']])?$question_type_list[$val['type']]['title']:"";
-
-            $question_page['list'][$key]['know_point_names'] = [];
-            if(!empty($val['know_point']))
-            {
-                $know_point_ids = array_map(function($v){ return (int)$v; },explode(",",$val['know_point']));
-                foreach($know_point_ids as $id)
-                {
-                    if(isset($question_know_point_list[$id]))
-                        $question_page['list'][$key]['know_point_names'][] = $question_know_point_list[$id]['title'];
-                }
-            }
         }
         return my_json($question_page);
     }

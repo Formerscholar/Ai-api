@@ -8,6 +8,7 @@
 
 namespace app\ins\controller;
 
+use app\ins\model\Institution;
 use app\ins\model\Role;
 use app\ins\model\School;
 use app\ins\model\Team;
@@ -21,6 +22,8 @@ class User extends Admin{
 
         //获得负责的班级
         $user_data['team_ids'] = Team::whereFindInSet("uids",$this->uid)->column("id");
+        //开通的班级
+        $user_data['grade_ids'] = Institution::where("id",$this->ins_id)->field("grade_ids")->find()->getData("grade_ids");
 
         return my_json($user_data);
     }
